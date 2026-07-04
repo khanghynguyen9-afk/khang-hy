@@ -40,6 +40,18 @@
   button:active{transform:scale(.95)}          /* micro-interaction toàn hệ */
   button:focus-visible{outline:2px solid var(--blue-focus);outline-offset:2px}
 
+  /* ---------- chữ ký tác giả — cố định góc trên phải ---------- */
+  .credit{
+    position:fixed;top:16px;right:16px;z-index:60;
+    padding:7px 14px;border-radius:9999px;
+    border:1px solid rgba(255,255,255,.85);
+    background:rgba(255,255,255,.5);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), 0 2px 6px rgba(0,0,0,.08);
+    font-size:12px;font-weight:600;letter-spacing:-.12px;color:var(--red-logo);
+    white-space:nowrap;pointer-events:none;
+  }
+
   /* ---------- nút 3 gạch cố định (dark utility) ---------- */
   .burger{
     position:fixed;top:16px;left:16px;z-index:60;
@@ -337,6 +349,8 @@
     button:active{transform:none}
   }
 </style>
+
+<div class="credit">by Nguyễn Khang Hy</div>
 
 <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false">
   <span></span><span></span><span></span>
