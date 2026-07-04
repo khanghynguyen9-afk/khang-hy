@@ -157,20 +157,25 @@
   }
   .item.flash .pill{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(57,208,255,.35),0 12px 40px rgba(57,208,255,.3)}
 
-  /* bảng nhập hiện ra khi lia chuột / bấm */
-  .panel{
-    position:absolute;top:calc(100% + 10px);left:0;z-index:40;width:min(430px,calc(100vw - 44px));
-    border-radius:20px;border:1px solid rgba(160,190,255,.45);
-    background:linear-gradient(165deg,#22335e,#0b1122);
-    backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
-    box-shadow:0 30px 80px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.14);
-    padding:18px;opacity:0;transform:translateY(-8px) scale(.96);transform-origin:top left;
-    pointer-events:none;transition:opacity .22s,transform .26s cubic-bezier(.2,.9,.3,1.15);
+  /* bảng nhập riêng biệt — hiện giữa màn hình khi lia chuột vào ô tên,
+     nền đặc không mờ, lớp chắn phía sau chặn mọi thao tác vào nền */
+  .entry-layer{
+    position:fixed;inset:0;z-index:56;display:none;align-items:center;justify-content:center;
+    padding:20px;background:rgba(3,6,12,.72);
   }
-  .item:hover .panel,.item.open .panel,.item:focus-within .panel{opacity:1;transform:none;pointer-events:auto}
-  .panel h5{margin:0 0 12px;font-size:.95rem;display:flex;justify-content:space-between;align-items:center;gap:10px}
-  .panel h5 .del{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:8px}
-  .panel h5 .del:hover{color:var(--neg);background:rgba(255,84,73,.12)}
+  .entry-layer.show{display:flex}
+  .entry-box{
+    width:min(480px,100%);max-height:86vh;overflow:auto;
+    border-radius:20px;border:1px solid rgba(160,190,255,.5);
+    background:linear-gradient(165deg,#22335e,#0b1122);
+    box-shadow:0 40px 110px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.12);
+    padding:20px;
+    animation:pop .24s cubic-bezier(.2,.9,.3,1.12);
+  }
+  @keyframes pop{from{transform:translateY(16px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+  .entry-box h5{margin:0 0 12px;font-size:1.05rem;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .entry-box h5 .del{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:8px}
+  .entry-box h5 .del:hover{color:var(--neg);background:rgba(255,84,73,.12)}
   .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .field label{display:block;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:#b9c4dd;margin:0 0 4px;font-weight:700}
   .field input{
@@ -191,12 +196,12 @@
   .days .d span{font-size:.62rem;color:#b9c4dd;text-align:center}
   .days .d input{padding:6px 4px;font-size:.8rem;text-align:center;border-radius:8px;border:1px solid rgba(160,190,255,.35);background:#060b16;color:#fff}
   .days .d input:focus{outline:none;border-color:var(--cyan)}
-  .panel .live{
+  .entry-box .live{
     grid-column:1 / -1;margin-top:6px;padding:10px 12px;border-radius:12px;
     background:rgba(120,150,220,.14);font-size:.82rem;color:#b9c4dd;
     display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-variant-numeric:tabular-nums;
   }
-  .panel .live b{color:var(--ink)}
+  .entry-box .live b{color:var(--ink)}
 
   /* ---------- chênh lệch ---------- */
   .var-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:14px}
@@ -250,7 +255,6 @@
 
   @media (max-width:560px){
     .fields{grid-template-columns:1fr}
-    .panel{position:fixed;left:12px;right:12px;top:auto;bottom:12px;width:auto}
   }
   @media (prefers-reduced-motion:reduce){
     .logo3d{animation:none}
@@ -274,6 +278,13 @@
 
 <div class="search-layer" id="searchLayer">
   <div class="search-results" id="searchResults"></div>
+</div>
+
+<div class="entry-layer" id="entryLayer">
+  <div class="entry-box">
+    <button class="close-x" id="entryClose" aria-label="Đóng">✕</button>
+    <div id="entryBody"></div>
+  </div>
 </div>
 
 <div class="rev-layer" id="revLayer">
@@ -397,50 +408,72 @@ function render(){
     var wrap=document.createElement("div");wrap.className="item";wrap.dataset.idx=idx;
     var pill=document.createElement("button");pill.className="pill";pill.type="button";
     pill.innerHTML='<span class="dot"></span>'+esc(it.name);
-    pill.addEventListener("click",function(){wrap.classList.toggle("open");});
-    var panel=document.createElement("div");panel.className="panel";
-    var h=document.createElement("h5");
-    h.innerHTML=esc(it.name)+' <button class="del" title="Xoá vật tư">🗑</button>';
-    h.querySelector(".del").addEventListener("click",function(){
-      if(confirm("Xoá \""+it.name+"\" và toàn bộ số liệu của món này?")){
-        state.items.splice(idx,1);save();render();
-      }
+    /* lia chuột (giữ ~0.25s để tránh mở nhầm khi lướt ngang) hoặc bấm → mở bảng riêng */
+    var hoverTimer=null;
+    pill.addEventListener("mouseenter",function(){
+      hoverTimer=setTimeout(function(){openEntry(idx);},250);
     });
-    panel.appendChild(h);
-    var grid=document.createElement("div");grid.className="fields";
-    FIELDS.forEach(function(f){
-      var d=document.createElement("div");d.className="field";
-      d.innerHTML='<label>'+f[1]+'</label>';
-      var inp=document.createElement("input");
-      inp.type="number";inp.step="any";inp.inputMode="decimal";inp.placeholder="0";
-      inp.value=it[f[0]];
-      inp.addEventListener("input",function(){it[f[0]]=inp.value;save();refresh(idx);});
-      d.appendChild(inp);grid.appendChild(d);
-    });
-    var tg=document.createElement("button");tg.type="button";tg.className="days-toggle";
-    tg.textContent="📅 Số món bán theo ngày (sheet 2) — bấm để mở";
-    var days=document.createElement("div");days.className="days";
-    tg.addEventListener("click",function(){days.classList.toggle("show");});
-    for(var d2=0;d2<DAYS;d2++){
-      (function(d3){
-        var cell=document.createElement("div");cell.className="d";
-        cell.innerHTML="<span>"+(d3+1)+"</span>";
-        var di=document.createElement("input");
-        di.type="number";di.step="any";di.inputMode="decimal";di.placeholder="·";
-        di.value=it.days[d3];
-        di.addEventListener("input",function(){it.days[d3]=di.value;save();refresh(idx);});
-        cell.appendChild(di);days.appendChild(cell);
-      })(d2);
-    }
-    grid.appendChild(tg);grid.appendChild(days);
-    var live=document.createElement("div");live.className="live";
-    grid.appendChild(live);
-    panel.appendChild(grid);
-    wrap.appendChild(pill);wrap.appendChild(panel);
+    pill.addEventListener("mouseleave",function(){clearTimeout(hoverTimer);});
+    pill.addEventListener("click",function(){clearTimeout(hoverTimer);openEntry(idx);});
+    wrap.appendChild(pill);
     pillGrid.appendChild(wrap);
   });
   buildVars();
   state.items.forEach(function(_,i){refresh(i);});
+}
+
+/* ---------- bảng nhập riêng biệt ---------- */
+var entryLayer=document.getElementById("entryLayer");
+var entryBody=document.getElementById("entryBody");
+var entryIdx=-1;
+function closeEntry(){entryLayer.classList.remove("show");entryIdx=-1;}
+document.getElementById("entryClose").addEventListener("click",closeEntry);
+entryLayer.addEventListener("click",function(e){if(e.target===entryLayer)closeEntry();});
+
+function openEntry(idx){
+  var it=state.items[idx];
+  if(!it)return;
+  entryIdx=idx;
+  entryBody.innerHTML="";
+  var h=document.createElement("h5");
+  h.innerHTML=esc(it.name)+' <button class="del" title="Xoá vật tư">🗑</button>';
+  h.querySelector(".del").addEventListener("click",function(){
+    if(confirm("Xoá \""+it.name+"\" và toàn bộ số liệu của món này?")){
+      state.items.splice(idx,1);save();closeEntry();render();
+    }
+  });
+  entryBody.appendChild(h);
+  var grid=document.createElement("div");grid.className="fields";
+  FIELDS.forEach(function(f){
+    var d=document.createElement("div");d.className="field";
+    d.innerHTML='<label>'+f[1]+'</label>';
+    var inp=document.createElement("input");
+    inp.type="number";inp.step="any";inp.inputMode="decimal";inp.placeholder="0";
+    inp.value=it[f[0]];
+    inp.addEventListener("input",function(){it[f[0]]=inp.value;save();refresh(idx);});
+    d.appendChild(inp);grid.appendChild(d);
+  });
+  var tg=document.createElement("button");tg.type="button";tg.className="days-toggle";
+  tg.textContent="📅 Số món bán theo ngày (sheet 2) — bấm để mở";
+  var days=document.createElement("div");days.className="days";
+  tg.addEventListener("click",function(){days.classList.toggle("show");});
+  for(var d2=0;d2<DAYS;d2++){
+    (function(d3){
+      var cell=document.createElement("div");cell.className="d";
+      cell.innerHTML="<span>"+(d3+1)+"</span>";
+      var di=document.createElement("input");
+      di.type="number";di.step="any";di.inputMode="decimal";di.placeholder="·";
+      di.value=it.days[d3];
+      di.addEventListener("input",function(){it.days[d3]=di.value;save();refresh(idx);});
+      cell.appendChild(di);days.appendChild(cell);
+    })(d2);
+  }
+  grid.appendChild(tg);grid.appendChild(days);
+  var live=document.createElement("div");live.className="live";
+  grid.appendChild(live);
+  entryBody.appendChild(grid);
+  entryLayer.classList.add("show");
+  refresh(idx);
 }
 
 function buildVars(){
@@ -458,8 +491,10 @@ function refresh(idx){
   if(wrap){
     wrap.classList.toggle("done",r.filled===FIELDS.length);
     wrap.classList.toggle("part",r.filled>0&&r.filled<FIELDS.length);
-    var live=wrap.querySelector(".live");
-    live.innerHTML="Xuất bán: <b>"+fmt(r.xuatBan)+"</b>"
+  }
+  if(entryIdx===idx){
+    var live=entryBody.querySelector(".live");
+    if(live)live.innerHTML="Xuất bán: <b>"+fmt(r.xuatBan)+"</b>"
       +"<span>Tồn cuối LT: <b>"+fmt(r.tonCuoi)+"</b></span>"
       +"<span>Chênh lệch: <b>"+(r.ready?fmt(r.chenhLech):"—")+"</b></span>";
   }
@@ -517,9 +552,10 @@ searchInput.addEventListener("input",function(){
         var wrap=pillGrid.querySelector('.item[data-idx="'+x.i+'"]');
         if(wrap){
           wrap.scrollIntoView({behavior:"smooth",block:"center"});
-          wrap.classList.add("open","flash");
+          wrap.classList.add("flash");
           setTimeout(function(){wrap.classList.remove("flash");},2200);
         }
+        openEntry(x.i);
       });
       searchResults.appendChild(c);
     });
@@ -528,7 +564,7 @@ searchInput.addEventListener("input",function(){
 });
 searchLayer.addEventListener("click",function(e){if(e.target===searchLayer)closeSearch();});
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){closeSearch();document.getElementById("revLayer").classList.remove("show");
+  if(e.key==="Escape"){closeSearch();closeEntry();document.getElementById("revLayer").classList.remove("show");
     menu.classList.remove("open");burger.classList.remove("open");}
 });
 
