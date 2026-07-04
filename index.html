@@ -131,6 +131,22 @@
   }
   .hero p{max-width:640px;color:var(--muted);font-size:17px;line-height:1.47;letter-spacing:-.374px;margin:16px 0 0;font-weight:400}
   .hero p b{color:var(--ink);font-weight:600}
+  /* Tổng thành tiền — nổi bật giữa hero, ngay dưới logo cá */
+  .hero-total{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    margin:4px 0 14px;padding:14px 34px;border-radius:18px;
+    border:1px solid rgba(255,255,255,.75);
+    background:rgba(245,245,247,.6);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(0,0,0,.05);
+  }
+  .hero-total .lb{font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--ink-48);text-transform:uppercase}
+  .hero-total .amt{
+    font-family:var(--font-display);font-size:clamp(28px,4.5vw,40px);font-weight:600;
+    letter-spacing:-.022em;font-variant-numeric:tabular-nums;color:var(--ink);
+  }
+  .hero-total .amt.pos{color:var(--pos)}
+  .hero-total .amt.neg{color:var(--neg)}
 
   /* ---------- hiệu ứng cuộn: mờ dần + thu nhẹ kiểu Apple ---------- */
   .fx{transition:transform .6s cubic-bezier(.25,.7,.3,1),opacity .6s;will-change:transform,opacity}
@@ -163,13 +179,28 @@
   .item{position:relative}
   .pill{
     display:inline-flex;align-items:center;gap:9px;padding:12px 18px;border-radius:9999px;
-    border:1px solid var(--hairline);cursor:pointer;user-select:none;
-    background:var(--canvas);color:var(--ink);
+    border:1px solid rgba(255,255,255,.75);cursor:pointer;user-select:none;
+    background:rgba(255,255,255,.45);color:var(--ink);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(0,0,0,.05);
     font:inherit;font-size:14px;font-weight:400;letter-spacing:-.224px;
     white-space:normal;text-align:left;max-width:100%;
-    transition:border-color .2s,transform .2s;
+    transition:border-color .2s,transform .2s,background .2s;
   }
-  .item:hover .pill{border-color:#b8b8bd}
+  .item:hover .pill{border-color:#b8b8bd;background:rgba(255,255,255,.7)}
+  /* ánh màu rất nhẹ phía sau để chip kính có chiều sâu */
+  .tile-parchment{
+    background:
+      radial-gradient(640px 320px at 12% 0%, rgba(212,42,32,.05), transparent 60%),
+      radial-gradient(640px 320px at 88% 100%, rgba(0,102,204,.05), transparent 60%),
+      var(--parchment);
+  }
+  .tile-white{
+    background:
+      radial-gradient(640px 320px at 88% 0%, rgba(0,102,204,.04), transparent 60%),
+      radial-gradient(640px 320px at 12% 100%, rgba(212,42,32,.04), transparent 60%),
+      var(--canvas);
+  }
   .item.flash .pill{border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.35)}
   .pill .dot{width:8px;height:8px;border-radius:50%;background:#d2d2d7;flex:none;transition:background .3s}
   .item.done .pill .dot{background:var(--pos)}
@@ -245,28 +276,35 @@
   .var-card.zero .val{color:var(--blue-on-dark)}
   .var-card.wait .val{color:var(--ink-48);font-size:15px;font-weight:400;font-family:var(--font-text)}
 
-  /* ---------- doanh thu ---------- */
-  .rev-layer{position:fixed;inset:0;z-index:55;display:none;align-items:center;justify-content:center;padding:20px;
-    background:rgba(0,0,0,.35)}
-  .rev-layer.show{display:flex}
-  .rev-box{
-    width:min(700px,100%);max-height:80vh;overflow:auto;border-radius:18px;padding:24px;
-    border:1px solid var(--hairline);background:var(--canvas);color:var(--ink);
-    box-shadow:var(--shadow-product);
+  /* ---------- thanh bên đơn giá ---------- */
+  .price-scrim{
+    position:fixed;inset:0;z-index:57;display:none;background:rgba(0,0,0,.3);
   }
-  .rev-box h3{margin:0 0 4px;font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-.022em}
-  .rev-box .note{font-size:14px;color:var(--muted);letter-spacing:-.224px;margin:0 0 18px}
-  .rev-table{width:100%;border-collapse:collapse;font-size:14px;letter-spacing:-.224px;font-variant-numeric:tabular-nums}
-  .rev-table th{font-size:12px;letter-spacing:-.12px;color:var(--ink-48);font-weight:600;text-align:left;padding:8px;border-bottom:1px solid var(--hairline)}
-  .rev-table td{padding:10px 8px;border-bottom:1px solid var(--divider)}
-  .rev-table td.num{text-align:right}
-  .rev-table td.pos{color:var(--pos)}
-  .rev-table td.neg{color:var(--neg)}
-  .rev-table input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--hairline);background:var(--parchment);color:var(--ink);font:inherit;font-size:14px;text-align:right}
-  .rev-table input:focus{outline:none;border-color:var(--blue-focus);background:#fff}
-  .rev-total{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding:14px 18px;border-radius:11px;
-    background:var(--parchment);font-weight:600}
-  .rev-total .amt{font-family:var(--font-display);font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .price-scrim.show{display:block}
+  .price-side{
+    position:fixed;top:0;left:0;bottom:0;z-index:58;width:min(400px,92vw);
+    background:rgba(250,250,252,.92);
+    backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-right:1px solid var(--hairline);
+    padding:20px;display:flex;flex-direction:column;gap:12px;
+    transform:translateX(-102%);transition:transform .3s cubic-bezier(.3,.8,.3,1);
+  }
+  .price-side.show{transform:none}
+  .price-side h3{margin:0;font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-.022em;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .price-side .note{font-size:12px;color:var(--ink-48);letter-spacing:-.12px;margin:0}
+  .price-list{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+  .price-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 2px;border-bottom:1px solid var(--divider);
+  }
+  .price-row .nm{font-size:14px;letter-spacing:-.224px;color:var(--ink);flex:1}
+  .price-row .nm small{display:block;font-size:11px;color:var(--ink-48)}
+  .price-row input{
+    width:96px;padding:8px 10px;border-radius:8px;border:1px solid var(--hairline);
+    background:#fff;color:var(--ink);font:inherit;font-size:14px;text-align:right;
+    font-variant-numeric:tabular-nums;flex:none;
+  }
+  .price-row input:focus{outline:none;border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.25)}
   .close-x{
     position:sticky;top:0;float:right;border:1px solid transparent;color:var(--ink);
     width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:14px;
@@ -300,8 +338,8 @@
 <nav class="menu" id="menu" aria-hidden="true">
   <h4>Tìm kiếm</h4>
   <input type="search" id="searchInput" placeholder="Nhập tên vật tư hoặc món bán…" autocomplete="off">
-  <h4>Báo cáo</h4>
-  <button class="menu-item" id="btnRevenue"><span class="ic">₫</span> Doanh thu (thành tiền chênh lệch)</button>
+  <h4>Đơn giá</h4>
+  <button class="menu-item" id="btnPrice"><span class="ic">₫</span> Đơn giá vật tư (xem &amp; sửa)</button>
   <h4>Dữ liệu</h4>
   <button class="menu-item" id="btnExport"><span class="ic">⭳</span> Sao lưu số liệu (tải file)</button>
   <button class="menu-item" id="btnImport"><span class="ic">⭱</span> Khôi phục từ file sao lưu</button>
@@ -320,20 +358,12 @@
   </div>
 </div>
 
-<div class="rev-layer" id="revLayer">
-  <div class="rev-box">
-    <button class="close-x" id="revClose" aria-label="Đóng">✕</button>
-    <h3>Doanh thu — thành tiền theo chênh lệch</h3>
-    <p class="note">Theo đúng file Excel: Thành tiền = Đơn giá × Chênh lệch của từng vật tư. Đơn giá nạp sẵn từ file, có thể sửa và được lưu lại.</p>
-    <div style="overflow-x:auto">
-      <table class="rev-table">
-        <thead><tr><th>Tên vật tư</th><th>ĐVT</th><th style="text-align:right">Chênh lệch</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
-        <tbody id="revBody"></tbody>
-      </table>
-    </div>
-    <div class="rev-total"><span>TỔNG THÀNH TIỀN</span><span class="amt" id="revTotal">0</span></div>
-  </div>
-</div>
+<div class="price-scrim" id="priceScrim"></div>
+<aside class="price-side" id="priceSide" aria-label="Đơn giá vật tư">
+  <h3>Đơn giá vật tư <button class="close-x" id="priceClose" aria-label="Đóng" style="float:none">✕</button></h3>
+  <p class="note">Đơn giá nạp sẵn từ file Excel. Sửa trực tiếp tại đây khi giá thay đổi — giá mới được lưu lại và dùng để tính Tổng thành tiền = Σ(Đơn giá × Chênh lệch).</p>
+  <div class="price-list" id="priceList"></div>
+</aside>
 
 <header class="hero fx">
   <div class="logo-stage" aria-hidden="true">
@@ -342,6 +372,10 @@
       <svg class="l-mid" viewBox="0 0 320 170"><use href="#fish"/></svg>
       <svg class="l-front" viewBox="0 0 320 170"><use href="#fish"/></svg>
     </div>
+  </div>
+  <div class="hero-total" id="heroTotal">
+    <span class="lb">Tổng thành tiền</span>
+    <span class="amt" id="heroTotalAmt">0</span>
   </div>
   <h1 class="brand">Chang Kang Kung <em>CKK05</em><small>XUẤT · NHẬP · TỒN</small></h1>
   <p>Danh mục và công thức nạp từ file <b>XNT_NEW_CKk05_da_sua.xlsx</b>: 35 vật tư, 63 món bán, 151 dòng định mức.
@@ -758,7 +792,7 @@ function openEntryM(ma,mode){
 /* ---------- tính lại toàn bộ ---------- */
 function refreshAll(){
   var map=xdmMap();
-  var duong=0,am=0,khop=0,cho=0;
+  var duong=0,am=0,khop=0,cho=0,totalO=0;
   CATALOG.vatTu.forEach(function(v){
     var r=calcV(v.ma,map);
     var wrap=vtGrid.querySelector('.item[data-key="v:'+v.ma+'"]');
@@ -779,7 +813,14 @@ function refreshAll(){
     else if(r.chenhLech>0)duong++;
     else if(r.chenhLech<0)am++;
     else khop++;
+    totalO+=gia(v.ma)*(r.ready?r.chenhLech:0); /* O = N × M; ô trống tính 0 như Excel */
   });
+  /* Tổng thành tiền = SUM(O6:O40) — hiện nổi bật dưới logo */
+  var amtEl=document.getElementById("heroTotalAmt");
+  amtEl.textContent=fmt2(totalO);
+  amtEl.classList.remove("pos","neg");
+  if(totalO>0)amtEl.classList.add("pos");
+  else if(totalO<0)amtEl.classList.add("neg");
   CATALOG.monBan.forEach(function(m){
     var wrap=monWrap.querySelector('.item[data-key="m:'+m.ma+'"]');
     if(wrap){
@@ -867,39 +908,33 @@ searchInput.addEventListener("input",function(){
 });
 searchLayer.addEventListener("click",function(e){if(e.target===searchLayer)closeSearch();});
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){closeSearch();closeEntry();document.getElementById("revLayer").classList.remove("show");
+  if(e.key==="Escape"){closeSearch();closeEntry();closePrice();
     menu.classList.remove("open");burger.classList.remove("open");}
 });
 
-/* ---------- doanh thu / thành tiền (cột N, O của file) ---------- */
-var revLayer=document.getElementById("revLayer");
-document.getElementById("btnRevenue").addEventListener("click",function(){
-  renderRevenue();revLayer.classList.add("show");
+/* ---------- thanh bên đơn giá (cột N của file — sửa được, có lưu) ---------- */
+var priceSide=document.getElementById("priceSide");
+var priceScrim=document.getElementById("priceScrim");
+function closePrice(){priceSide.classList.remove("show");priceScrim.classList.remove("show");}
+document.getElementById("btnPrice").addEventListener("click",function(){
+  renderPriceList();
+  priceSide.classList.add("show");priceScrim.classList.add("show");
   menu.classList.remove("open");burger.classList.remove("open");
 });
-document.getElementById("revClose").addEventListener("click",function(){revLayer.classList.remove("show");});
-revLayer.addEventListener("click",function(e){if(e.target===revLayer)revLayer.classList.remove("show");});
-function renderRevenue(){
-  var body=document.getElementById("revBody");body.innerHTML="";
-  var map=xdmMap();var total=0;
+document.getElementById("priceClose").addEventListener("click",closePrice);
+priceScrim.addEventListener("click",closePrice);
+function renderPriceList(){
+  var list=document.getElementById("priceList");list.innerHTML="";
   CATALOG.vatTu.forEach(function(v){
-    var r=calcV(v.ma,map);
-    var m=r.ready?r.chenhLech:0;
-    var money=gia(v.ma)*m;   /* O = N × M, ô trống tính 0 như Excel */
-    total+=money;
-    var tr=document.createElement("tr");
-    var mCls=m<0?"neg":(m>0?"pos":"");
-    tr.innerHTML='<td>'+esc(v.ten)+'</td><td>'+esc(v.dvt)+'</td>'
-      +'<td class="num '+mCls+'">'+(r.ready?((m<0?"-":(m>0?"+":""))+fmt(Math.abs(m))):"—")+'</td>'
-      +'<td class="num"></td>'
-      +'<td class="num '+(money<0?"neg":(money>0?"pos":""))+'">'+fmt2(money)+'</td>';
+    var row=document.createElement("div");row.className="price-row";
+    row.innerHTML='<span class="nm">'+esc(v.ten)+'<small>'+esc(v.ma)+' · '+esc(v.dvt)+'</small></span>';
     var inp=document.createElement("input");
-    inp.type="number";inp.step="any";inp.value=(state.gia[v.ma]!==undefined&&state.gia[v.ma]!==null&&String(state.gia[v.ma]).trim()!=="")?state.gia[v.ma]:giaGoc[v.ma];
-    inp.addEventListener("input",function(){state.gia[v.ma]=inp.value;save();renderRevenue();});
-    tr.children[3].appendChild(inp);
-    body.appendChild(tr);
+    inp.type="number";inp.step="any";
+    inp.value=(state.gia[v.ma]!==undefined&&state.gia[v.ma]!==null&&String(state.gia[v.ma]).trim()!=="")?state.gia[v.ma]:giaGoc[v.ma];
+    inp.addEventListener("input",function(){state.gia[v.ma]=inp.value;save();refreshAll();});
+    row.appendChild(inp);
+    list.appendChild(row);
   });
-  document.getElementById("revTotal").textContent=fmt2(total);
 }
 
 /* ---------- sao lưu / khôi phục / kỳ mới ---------- */
