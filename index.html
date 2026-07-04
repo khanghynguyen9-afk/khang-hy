@@ -917,6 +917,18 @@ searchInput.addEventListener("input",function(){
   }
   searchLayer.classList.add("show");
 });
+/* Nhấn Enter: ẩn bảng menu để thấy rõ kết quả tìm kiếm */
+searchInput.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){
+    e.preventDefault();
+    menu.classList.remove("open");
+    burger.classList.remove("open");
+    burger.setAttribute("aria-expanded","false");
+    menu.setAttribute("aria-hidden","true");
+    searchInput.blur();
+    if(searchInput.value.trim())searchLayer.classList.add("show");
+  }
+});
 searchLayer.addEventListener("click",function(e){if(e.target===searchLayer)closeSearch();});
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){closeSearch();closeEntry();closePrice();
