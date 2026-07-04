@@ -31,7 +31,7 @@
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
-    margin:0;background:var(--canvas);color:var(--ink);
+    margin:0;background:#e2e2e8;color:var(--ink);
     font-family:var(--font-text);font-size:17px;line-height:1.47;letter-spacing:-.022em;
     min-height:100vh;overflow-x:hidden;
   }
@@ -104,7 +104,12 @@
   /* ---------- hero: tile trắng, logo = "sản phẩm" ---------- */
   .hero{
     position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:6px;
-    padding:84px 22px 72px;text-align:center;background:var(--canvas);
+    padding:84px 22px 72px;text-align:center;
+    background:
+      radial-gradient(720px 400px at 50% -10%, rgba(212,42,32,.10), transparent 65%),
+      radial-gradient(560px 320px at 12% 80%, rgba(0,102,204,.09), transparent 60%),
+      radial-gradient(560px 320px at 88% 80%, rgba(212,42,32,.06), transparent 60%),
+      #e6e6ec;
   }
   .logo-stage{perspective:900px;width:280px;height:150px;margin-bottom:10px}
   .logo3d{
@@ -135,10 +140,10 @@
   .hero-total{
     display:flex;flex-direction:column;align-items:center;gap:2px;
     margin:4px 0 14px;padding:14px 34px;border-radius:18px;
-    border:1px solid rgba(255,255,255,.75);
-    background:rgba(245,245,247,.6);
+    border:1px solid rgba(255,255,255,.85);
+    background:rgba(255,255,255,.45);
     backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(0,0,0,.05);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), 0 2px 6px rgba(0,0,0,.08);
   }
   .hero-total .lb{font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--ink-48);text-transform:uppercase}
   .hero-total .amt{
@@ -179,27 +184,29 @@
   .item{position:relative}
   .pill{
     display:inline-flex;align-items:center;gap:9px;padding:12px 18px;border-radius:9999px;
-    border:1px solid rgba(255,255,255,.75);cursor:pointer;user-select:none;
-    background:rgba(255,255,255,.45);color:var(--ink);
+    border:1px solid rgba(255,255,255,.85);cursor:pointer;user-select:none;
+    background:rgba(255,255,255,.42);color:var(--ink);
     backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 1px 3px rgba(0,0,0,.05);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95), 0 2px 6px rgba(0,0,0,.08);
     font:inherit;font-size:14px;font-weight:400;letter-spacing:-.224px;
     white-space:normal;text-align:left;max-width:100%;
     transition:border-color .2s,transform .2s,background .2s;
   }
   .item:hover .pill{border-color:#b8b8bd;background:rgba(255,255,255,.7)}
-  /* ánh màu rất nhẹ phía sau để chip kính có chiều sâu */
+  /* nền tối hơn một tông + ánh màu để chip kính nổi rõ */
   .tile-parchment{
     background:
-      radial-gradient(640px 320px at 12% 0%, rgba(212,42,32,.05), transparent 60%),
-      radial-gradient(640px 320px at 88% 100%, rgba(0,102,204,.05), transparent 60%),
-      var(--parchment);
+      radial-gradient(720px 380px at 12% 0%, rgba(212,42,32,.11), transparent 60%),
+      radial-gradient(720px 380px at 88% 100%, rgba(0,102,204,.11), transparent 60%),
+      radial-gradient(500px 300px at 60% 50%, rgba(255,255,255,.35), transparent 70%),
+      #dedee5;
   }
   .tile-white{
     background:
-      radial-gradient(640px 320px at 88% 0%, rgba(0,102,204,.04), transparent 60%),
-      radial-gradient(640px 320px at 12% 100%, rgba(212,42,32,.04), transparent 60%),
-      var(--canvas);
+      radial-gradient(720px 380px at 88% 0%, rgba(0,102,204,.10), transparent 60%),
+      radial-gradient(720px 380px at 12% 100%, rgba(212,42,32,.10), transparent 60%),
+      radial-gradient(500px 300px at 40% 50%, rgba(255,255,255,.35), transparent 70%),
+      #e6e6ec;
   }
   .item.flash .pill{border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.35)}
   .pill .dot{width:8px;height:8px;border-radius:50%;background:#d2d2d7;flex:none;transition:background .3s}
@@ -314,8 +321,8 @@
 
   footer{
     position:relative;z-index:1;text-align:center;color:var(--ink-48);
-    font-size:12px;letter-spacing:-.12px;padding:48px 22px;background:var(--parchment);
-    border-top:1px solid var(--hairline);
+    font-size:12px;letter-spacing:-.12px;padding:48px 22px;background:#dedee5;
+    border-top:1px solid rgba(0,0,0,.06);
   }
 
   @media (max-width:640px){
