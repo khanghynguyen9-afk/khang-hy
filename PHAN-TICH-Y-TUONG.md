@@ -1,43 +1,49 @@
-# Web Xuất Nhập Tồn — Chang Kang Kung CKK05
+# Web Xuất Nhập Tồn — Chang Kang Kung CKK05 (bản hoàn chỉnh)
 
-Bản chính thức: `index.html` — **đã nạp danh mục và công thức thật** từ `XNT_NEW_CKk05_da_sua.xlsx` (lưu kèm trong repo): 35 vật tư, 63 món bán (6 nhóm), 151 dòng định mức, đơn giá từng vật tư.
+Web chính thức: `index.html` — by Nguyễn Khang Hy.
+Danh mục và công thức nạp từ `XNT_NEW_CKk05_da_sua.xlsx` (lưu kèm repo): **35 vật tư, 63 món bán (6 nhóm), 151 dòng định mức, đơn giá từng vật tư**. Giao diện theo design system Apple (`DESIGN.md`).
 
-Engine đã được kiểm chứng tự động: chạy bộ số ngẫu nhiên qua cả công thức Excel (mô phỏng SUMIF/VLOOKUP/SUM đúng từng ô) và engine web — **khớp 100%** trên 35 vật tư × 4 chỉ số (Xuất định mức, Tồn cuối kỳ, Chênh lệch, Thành tiền) và tổng thành tiền.
-
-## Công thức (sao chép nguyên văn từ file)
+## Công thức (đúng nguyên văn file Excel — đã kiểm chứng khớp 100%)
 
 ```
 Tổng bán món (AH, sheet 2)  = SUM(ngày 1 → 31)
-Xuất định mức vật tư (H)    = Σ(Định lượng chuẩn × Tổng bán món)  ← bảng định mức dòng 45-195
+Xuất định mức vật tư (H)    = Σ(Định lượng chuẩn × Tổng bán món)   ← bảng định mức dòng 45–195
                               (riêng Giò sống cộng thêm định mức mã ATHI0125)
 Tồn cuối kỳ (K)             = Tồn đầu + Nhập mua + Nhập ĐC − Xuất ĐC
                               − Xuất định mức − Xuất hủy − Xuất test
 CHÊNH LỆCH (M)              = Kiểm kê − Tồn cuối kỳ
-Thành tiền (O)              = Đơn giá × Chênh lệch ; Tổng = SUM(O)
+TỔNG THÀNH TIỀN             = Σ(Đơn giá × Chênh lệch)              ← SUM(O6:O40)
 ```
 
-- Chênh lệch **âm** → dấu `−`, **màu đỏ** (thiếu hàng). **Dương** → dấu `+`, **màu xanh lá** (thừa). Bằng 0 → "Khớp số ✔".
-- Khối "Tổng quan xu hướng chênh lệch" (số mặt hàng dương/âm, kết luận) hiển thị phía trên khu chênh lệch, tự cập nhật.
+Kiểm chứng tự động: bộ số ngẫu nhiên chạy song song qua mô phỏng công thức Excel (SUM/SUMIF/VLOOKUP từng ô) và engine web — khớp tuyệt đối 35 vật tư × 4 chỉ số + tổng thành tiền.
 
-## Cách sử dụng
+## Cách dùng
 
-### Hai khu nhập liệu (đúng cấu trúc 2 sheet của file)
-1. **Tên vật tư (sheet CKK05)** — lia chuột (giữ ~¼ giây) hoặc bấm vào ô tên → bảng riêng hiện giữa màn hình, nhập 7 mục: Tồn đầu kỳ, Nhập mua, Nhập điều chuyển, Xuất điều chuyển, Xuất hủy, Xuất test, Kiểm kê. Xuất định mức **không nhập tay** — tự tính từ số bán (đúng như ô công thức trong file).
-2. **Số món bán theo ngày (sheet 2)** — 63 món chia 6 nhóm (Hải sản hồ, Thịt, Hải sản đông, Tôm, Combo, Nhân dimsum). Mở ô món → nhập số bán từng ngày 1–31, cột Tổng cộng tự tính và tự "nhảy" vào xuất định mức của các vật tư liên quan.
+- **Tổng thành tiền** hiện nổi bật giữa trang, dưới logo cá 3D — xanh khi dương, đỏ khi âm, cập nhật tức thì.
+- **Lia chuột** vào ô (vật tư hoặc món bán) = xem nhanh, rời chuột tự ẩn. **Nhấp** = mở bảng nhập.
+  - Vật tư: nhập 7 mục (Tồn đầu kỳ, Nhập mua, Nhập ĐC, Xuất ĐC, Xuất hủy, Xuất test, Kiểm kê). Xuất định mức tự tính.
+  - Món bán: nhập số bán ngày 1–31, tổng tự cộng và tự trừ vào vật tư theo định mức.
+- **Chênh lệch từng vật tư** ở dải tối cuối trang: âm đỏ (thiếu), dương xanh (thừa), "Khớp số ✔"; kèm tổng quan số mặt hàng dương/âm + kết luận.
+- **Menu 3 gạch** (cố định góc trái):
+  - *Tìm kiếm*: gõ tên/mã → Enter để ẩn menu và xem kết quả → nhấp kết quả để mở bảng nhập.
+  - *Đơn giá vật tư*: thanh bên liệt kê 35 giá, sửa trực tiếp, lưu vĩnh viễn.
+  - *Sao lưu / Khôi phục*: file `.json`. *Bắt đầu kỳ mới*: xoá số nhập, giữ đơn giá.
+- Số liệu tự lưu trong trình duyệt từng máy (localStorage). Đổi máy → dùng Sao lưu + Khôi phục.
 
-Chấm trạng thái trên ô: vàng = nhập một phần, xanh = đủ (vật tư đủ 7 mục / món đã có số bán).
+## Đưa web lên địa chỉ cố định (làm 1 lần)
 
-### Menu 3 gạch (góc trên trái, cố định)
-- **Tìm kiếm**: tìm cả vật tư lẫn món bán theo tên hoặc mã — kết quả dạng tấm kính đè lên trên, bấm là cuộn tới và mở bảng nhập.
-- **Doanh thu (thành tiền chênh lệch)**: bảng Đơn giá × Chênh lệch từng vật tư + Tổng thành tiền (đơn giá nạp sẵn từ file, sửa được và được lưu).
-- **Sao lưu / Khôi phục**: tải file `.json` về máy và đổ lại khi cần.
-- **Xoá số liệu, bắt đầu kỳ mới**: xoá số nhập (giữ đơn giá đã sửa) — nhớ sao lưu trước.
+GitHub → **Settings → Pages → Source: GitHub Actions**. Workflow `.github/workflows/pages.yml` tự deploy; web tại `https://khanghynguyen9-afk.github.io/khang-hy/`.
 
-## Lưu ý dữ liệu
-Số liệu lưu trong trình duyệt từng máy (localStorage). Đổi máy/trình duyệt → dùng Sao lưu + Khôi phục. Nên sao lưu cuối mỗi kỳ.
+## Khi danh mục/định mức/giá trong Excel thay đổi lớn
 
-## GitHub Pages (làm 1 lần)
-Settings → Pages → Source: **GitHub Actions**. Workflow `.github/workflows/pages.yml` tự deploy; web tại `https://khanghynguyen9-afk.github.io/khang-hy/`.
+Gửi file Excel mới — chạy lại bộ trích xuất để cập nhật khối `CATALOG` trong `index.html`, chạy kiểm chứng khớp số rồi đẩy code. (Giá lẻ tẻ thì sửa ngay trong thanh Đơn giá trên web, không cần đổi code.)
 
-## Khi file Excel đổi danh mục/định mức
-Gửi file mới — chạy lại bộ trích xuất (script tại phiên làm việc) để cập nhật khối `CATALOG` trong `index.html`, chạy lại kiểm chứng khớp số rồi đẩy code.
+## Tệp trong repo
+
+| Tệp | Vai trò |
+|---|---|
+| `index.html` | Web chính thức (chạy độc lập, không cần cài gì) |
+| `XNT_NEW_CKk05_da_sua.xlsx` | File Excel gốc — nguồn danh mục & công thức |
+| `DESIGN.md` | Đặc tả design system Apple (từ `npx getdesign add apple`) |
+| `.github/workflows/pages.yml` | Tự deploy GitHub Pages |
+| `mau-1-neon.html`, `mau-2-kinh-sang.html` | 2 bản demo giai đoạn chọn mẫu (tham khảo) |
