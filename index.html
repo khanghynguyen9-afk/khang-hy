@@ -292,7 +292,89 @@
   .var-card.zero .val{color:var(--blue-on-dark)}
   .var-card.wait .val{color:var(--ink-48);font-size:15px;font-weight:400;font-family:var(--font-text)}
 
-  /* ---------- thanh bên đơn giá ---------- */
+  /* ---------- vật tư: hàng dọc, tên trái + các ô nhập bên cạnh ---------- */
+  .vt-list{display:flex;flex-direction:column;gap:10px}
+  .vt-row{
+    display:flex;gap:14px;align-items:stretch;
+    border-radius:16px;border:1px solid rgba(255,255,255,.75);
+    background:rgba(255,255,255,.42);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 6px rgba(0,0,0,.07);
+    padding:12px 14px;transition:border-color .2s,box-shadow .2s;
+  }
+  .vt-row.flash{border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.35)}
+  .vt-name{
+    flex:0 0 206px;min-width:150px;display:flex;align-items:flex-start;gap:8px;
+    font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.224px;line-height:1.3;
+  }
+  .vt-name .dot{width:8px;height:8px;border-radius:50%;background:#d2d2d7;flex:none;margin-top:5px}
+  .vt-row.done .vt-name .dot,.mon-row.done .vt-name .dot{background:var(--pos)}
+  .vt-row.part .vt-name .dot{background:#ff9f0a}
+  .vt-name small{display:block;font-size:11px;font-weight:400;color:var(--ink-48);margin-top:2px}
+  .vt-fields{flex:1;display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px}
+  .vt-f{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .vt-f label{font-size:10px;color:var(--ink-48);font-weight:600;letter-spacing:-.08px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vt-f.out label{color:var(--blue)}
+  .vt-f input{
+    width:100%;padding:8px;border-radius:8px;border:1px solid var(--hairline);
+    background:rgba(255,255,255,.75);color:var(--ink);font:inherit;font-size:15px;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .vt-f input:focus{outline:none;border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.25);background:#fff}
+  .vt-f .ro{
+    padding:8px;border-radius:8px;border:1px dashed rgba(0,0,0,.12);
+    background:rgba(0,0,0,.03);font-size:15px;text-align:right;font-variant-numeric:tabular-nums;
+    color:var(--ink-80);min-height:35px;display:flex;align-items:center;justify-content:flex-end;
+  }
+  .vt-f .ro.neg{color:var(--neg);border-color:rgba(227,0,0,.35);background:rgba(227,0,0,.05)}
+  .vt-f .ro.pos{color:var(--pos);border-color:rgba(29,157,80,.35);background:rgba(29,157,80,.05)}
+
+  /* ---------- nhập nhanh theo ngày (món bán) ---------- */
+  .day-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:12px 16px;border-radius:14px;margin:0 0 16px;
+    border:1px solid rgba(0,102,204,.3);background:rgba(0,102,204,.08);
+    font-size:14px;font-weight:600;color:var(--blue);
+  }
+  .day-banner button{
+    border:1px solid rgba(0,102,204,.4);background:#fff;color:var(--blue);
+    padding:8px 14px;border-radius:9999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .mon-row{
+    display:flex;gap:14px;align-items:center;
+    border-radius:14px;border:1px solid rgba(255,255,255,.75);
+    background:rgba(255,255,255,.42);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 6px rgba(0,0,0,.07);
+    padding:10px 14px;margin-bottom:8px;
+  }
+  .mon-row.flash{border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.35)}
+  .mon-row .vt-name{flex:1}
+  .mon-row input{
+    flex:0 0 120px;width:120px;padding:9px 12px;border-radius:9px;border:1px solid var(--hairline);
+    background:rgba(255,255,255,.8);color:var(--ink);font:inherit;font-size:16px;text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .mon-row input:focus{outline:none;border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.25);background:#fff}
+
+  /* ---------- tiêu đề + thanh tìm kiếm cạnh (mục chênh lệch) ---------- */
+  .sec-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 auto 20px}
+  .sec-head .sec-label{margin:0}
+  .sec-search{
+    flex:0 1 300px;min-width:180px;height:42px;padding:10px 18px;border-radius:9999px;
+    border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);color:var(--on-dark);
+    font:inherit;font-size:15px;
+  }
+  .sec-search::placeholder{color:var(--on-dark-muted)}
+  .sec-search:focus{outline:none;border-color:var(--blue-on-dark);box-shadow:0 0 0 2px rgba(41,151,255,.3)}
+  .var-card.hidden{display:none}
+
+  /* nhóm trong thanh bên định lượng */
+  .price-group{font-size:13px;font-weight:700;color:var(--ink);margin:14px 0 4px;letter-spacing:-.224px}
+  .price-group:first-child{margin-top:0}
+  .price-group small{display:block;font-size:11px;font-weight:400;color:var(--ink-48)}
+
+  /* ---------- thanh bên đơn giá / định lượng ---------- */
   .price-scrim{
     position:fixed;inset:0;z-index:57;display:none;background:rgba(0,0,0,.3);
   }
@@ -355,8 +437,11 @@
 <nav class="menu" id="menu" aria-hidden="true">
   <h4>Tìm kiếm</h4>
   <input type="search" id="searchInput" placeholder="Nhập tên vật tư hoặc món bán…" autocomplete="off">
-  <h4>Đơn giá</h4>
+  <h4>Nhập nhanh theo ngày</h4>
+  <input type="search" id="daySearch" placeholder="Nhập số ngày (1–31) rồi Enter" autocomplete="off">
+  <h4>Đơn giá &amp; định lượng</h4>
   <button class="menu-item" id="btnPrice"><span class="ic">₫</span> Đơn giá vật tư (xem &amp; sửa)</button>
+  <button class="menu-item" id="btnDL"><span class="ic">⚖</span> Định lượng chuẩn (xem &amp; sửa)</button>
   <h4>Dữ liệu</h4>
   <button class="menu-item" id="btnExport"><span class="ic">⭳</span> Sao lưu số liệu (tải file)</button>
   <button class="menu-item" id="btnImport"><span class="ic">⭱</span> Khôi phục từ file sao lưu</button>
@@ -379,6 +464,10 @@
 <aside class="price-side" id="priceSide" aria-label="Đơn giá vật tư">
   <h3>Đơn giá vật tư <button class="close-x" id="priceClose" aria-label="Đóng" style="float:none">✕</button></h3>
   <div class="price-list" id="priceList"></div>
+</aside>
+<aside class="price-side" id="dlSide" aria-label="Định lượng chuẩn">
+  <h3>Định lượng chuẩn <button class="close-x" id="dlClose" aria-label="Đóng" style="float:none">✕</button></h3>
+  <div class="price-list" id="dlList"></div>
 </aside>
 
 <header class="hero fx">
@@ -415,7 +504,7 @@
 <main>
   <section class="fx tile-parchment">
     <h2 class="sec-label">Tên vật tư.</h2>
-    <div class="pill-grid" id="vtGrid"></div>
+    <div class="vt-list" id="vtGrid"></div>
   </section>
 
   <section class="fx tile-white">
@@ -424,7 +513,10 @@
   </section>
 
   <section class="fx tile-dark">
-    <h2 class="sec-label">Chênh lệch theo từng vật tư.</h2>
+    <div class="sec-head">
+      <h2 class="sec-label">Chênh lệch theo từng vật tư.</h2>
+      <input type="search" class="sec-search" id="varSearch" placeholder="Tìm vật tư trong mục này…" autocomplete="off">
+    </div>
     <div class="summary" id="summary"></div>
     <div class="var-grid" id="varGrid"></div>
   </section>
@@ -597,25 +689,27 @@ monBan:[
    ===================================================================== */
 var STORE_KEY="ckk05-v2";
 var VFIELDS=[
-  ["tonDau","Tồn đầu kỳ"],
+  ["tonDau","Tồn đầu"],
   ["nhapMua","Nhập mua"],
-  ["nhapDC","Nhập điều chuyển"],
-  ["xuatDC","Xuất điều chuyển"],
+  ["nhapDC","Nhập ĐC"],
+  ["xuatDC","Xuất ĐC"],
   ["xuatHuy","Xuất hủy"],
   ["xuatTest","Xuất test"],
   ["kiemKe","Kiểm kê"]
 ];
 var DAYS=31;
+var dayFilter=null; /* null = xem tất cả ngày; 0..30 = nhập nhanh 1 ngày */
 
 function load(){
   try{
     var raw=localStorage.getItem(STORE_KEY);
     if(raw){var d=JSON.parse(raw);if(d&&d.v&&d.m)return d;}
   }catch(e){}
-  return {v:{},m:{},gia:{}};
+  return {v:{},m:{},gia:{},dl:{}};
 }
 var state=load();
 if(!state.gia)state.gia={};
+if(!state.dl)state.dl={};
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}}
 
 function itemV(ma){
@@ -638,6 +732,17 @@ function gia(ma){
   var g=state.gia[ma];
   return (g===undefined||g===null||String(g).trim()==="")?giaGoc[ma]:parseFloat(g)||0;
 }
+/* Định lượng chuẩn (cột F) — sửa được, có lưu, mặc định lấy từ file */
+function dlKey(maVT,maMon){return maVT+"|"+maMon;}
+function dlRaw(maVT,maMon,def){
+  var g=state.dl[dlKey(maVT,maMon)];
+  return (g===undefined||g===null||String(g).trim()==="")?def:g;
+}
+function dlVal(maVT,maMon,def){
+  var g=state.dl[dlKey(maVT,maMon)];
+  return (g===undefined||g===null||String(g).trim()==="")?def:(parseFloat(g)||0);
+}
+var monMap={};CATALOG.monBan.forEach(function(m){monMap[m.ma]=m.ten;});
 
 function num(v){var n=parseFloat(String(v).replace(",","."));return isFinite(n)?n:0;}
 function fmt(n){
@@ -658,7 +763,7 @@ function tongBan(maMon){
 function xdmMap(){
   var map={};
   CATALOG.bom.forEach(function(b){
-    map[b[0]]=(map[b[0]]||0)+b[2]*tongBan(b[1]);
+    map[b[0]]=(map[b[0]]||0)+dlVal(b[0],b[1],b[2])*tongBan(b[1]);
   });
   Object.keys(CATALOG.bomAlias).forEach(function(target){
     CATALOG.bomAlias[target].forEach(function(src){
@@ -683,7 +788,7 @@ var monWrap=document.getElementById("monWrap");
 var varGrid=document.getElementById("varGrid");
 var summary=document.getElementById("summary");
 
-/* Lia chuột → xem nhanh (rời chuột tự ẩn). Nhấp → mở hẳn bảng nhập. */
+/* Lia chuột → xem nhanh (rời chuột tự ẩn). Nhấp → mở hẳn bảng nhập. (dùng cho chip món bán) */
 function makePill(key,name,openFn){
   var wrap=document.createElement("div");wrap.className="item";wrap.dataset.key=key;
   var pill=document.createElement("button");pill.className="pill";pill.type="button";
@@ -701,31 +806,100 @@ function makePill(key,name,openFn){
   return wrap;
 }
 
-function render(){
+/* Vật tư: mỗi món 1 hàng — tên bên trái, 7 ô nhập + 3 ô tính bên cạnh */
+function buildVat(){
   vtGrid.innerHTML="";
   CATALOG.vatTu.forEach(function(v){
-    vtGrid.appendChild(makePill("v:"+v.ma,v.ten,function(mode){openEntryV(v.ma,mode);}));
+    var it=itemV(v.ma);
+    var row=document.createElement("div");row.className="vt-row item";row.dataset.key="v:"+v.ma;
+    var name=document.createElement("div");name.className="vt-name";
+    name.innerHTML='<span class="dot"></span><span>'+esc(v.ten)+'<small>'+esc(v.ma)+' · '+esc(v.dvt)+'</small></span>';
+    row.appendChild(name);
+    var fields=document.createElement("div");fields.className="vt-fields";
+    VFIELDS.forEach(function(f){
+      var d=document.createElement("div");d.className="vt-f";
+      d.innerHTML='<label>'+f[1]+'</label>';
+      var inp=document.createElement("input");
+      inp.type="number";inp.step="any";inp.inputMode="decimal";inp.placeholder="0";
+      inp.value=it[f[0]];
+      inp.addEventListener("input",function(){it[f[0]]=inp.value;save();refreshAll();});
+      d.appendChild(inp);fields.appendChild(d);
+    });
+    [["xdm","Xuất ĐM"],["ton","Tồn cuối"],["cl","Chênh lệch"]].forEach(function(o){
+      var d=document.createElement("div");d.className="vt-f out";
+      d.innerHTML='<label>'+o[1]+'</label><div class="ro" data-role="'+o[0]+'">—</div>';
+      fields.appendChild(d);
+    });
+    row.appendChild(fields);
+    vtGrid.appendChild(row);
   });
+}
+
+/* Món bán: mặc định chip (bấm mở 31 ngày); nhập nhanh theo ngày = mỗi món 1 ô */
+function buildMon(){
   monWrap.innerHTML="";
+  if(dayFilter!==null){
+    var banner=document.createElement("div");banner.className="day-banner";
+    banner.innerHTML='<span>Đang nhập nhanh — <b>Ngày '+(dayFilter+1)+'</b>. Nhập số bán từng món cho ngày này.</span>';
+    var b=document.createElement("button");b.type="button";b.textContent="Xem tất cả các ngày";
+    b.addEventListener("click",function(){setDayFilter(null);});
+    banner.appendChild(b);monWrap.appendChild(banner);
+  }
   var cats={};
   CATALOG.monBan.forEach(function(m){
     if(!cats[m.cat]){
+      var lb=document.createElement("div");lb.className="cat-label";lb.textContent=m.cat;monWrap.appendChild(lb);
       cats[m.cat]=document.createElement("div");
-      var lb=document.createElement("div");lb.className="cat-label";lb.textContent=m.cat;
-      monWrap.appendChild(lb);
-      cats[m.cat].className="pill-grid";
+      if(dayFilter===null)cats[m.cat].className="pill-grid";
       monWrap.appendChild(cats[m.cat]);
     }
-    cats[m.cat].appendChild(makePill("m:"+m.ma,m.ten,function(mode){openEntryM(m.ma,mode);}));
+    if(dayFilter===null){
+      cats[m.cat].appendChild(makePill("m:"+m.ma,m.ten,function(mode){openEntryM(m.ma,mode);}));
+    }else{
+      var it=itemM(m.ma);
+      var row=document.createElement("div");row.className="mon-row item";row.dataset.key="m:"+m.ma;
+      row.innerHTML='<div class="vt-name"><span class="dot"></span><span>'+esc(m.ten)+'<small>'+esc(m.ma)+'</small></span></div>';
+      var inp=document.createElement("input");
+      inp.type="number";inp.step="any";inp.inputMode="decimal";inp.placeholder="Ngày "+(dayFilter+1);
+      inp.value=it.days[dayFilter];
+      inp.addEventListener("input",function(){it.days[dayFilter]=inp.value;save();refreshAll();});
+      row.appendChild(inp);cats[m.cat].appendChild(row);
+    }
   });
+}
+
+function buildVar(){
   varGrid.innerHTML="";
   CATALOG.vatTu.forEach(function(v){
     var c=document.createElement("div");c.className="var-card";c.dataset.ma=v.ma;
     c.innerHTML='<span class="nm">'+esc(v.ten)+'</span><span class="val"></span><span class="sub"></span>';
     varGrid.appendChild(c);
   });
-  refreshAll();
+  applyVarFilter();
 }
+
+function setDayFilter(idx){
+  dayFilter=idx;buildMon();refreshAll();
+  if(idx!==null)monWrap.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function focusVat(ma){
+  var row=vtGrid.querySelector('.vt-row[data-key="v:'+ma+'"]');
+  if(row){var inp=row.querySelector("input");if(inp)inp.focus();}
+}
+
+function applyVarFilter(){
+  var el=document.getElementById("varSearch");
+  var q=el?el.value.trim().toLowerCase():"";
+  CATALOG.vatTu.forEach(function(v){
+    var card=varGrid.querySelector('.var-card[data-ma="'+v.ma+'"]');
+    if(!card)return;
+    var hit=!q||v.ten.toLowerCase().indexOf(q)>=0||v.ma.toLowerCase().indexOf(q)>=0;
+    card.classList.toggle("hidden",!hit);
+  });
+}
+
+function render(){buildVat();buildMon();buildVar();refreshAll();}
 
 /* ---------- bảng nhập riêng biệt ---------- */
 var entryLayer=document.getElementById("entryLayer");
@@ -735,36 +909,6 @@ var entryMode=null; /* "preview" = xem nhanh khi lia chuột, "pin" = mở hẳn
 function closeEntry(){entryLayer.classList.remove("show","preview");entryKey=null;entryMode=null;}
 document.getElementById("entryClose").addEventListener("click",closeEntry);
 entryLayer.addEventListener("click",function(e){if(e.target===entryLayer)closeEntry();});
-
-function openEntryV(ma,mode){
-  mode=mode||"pin";
-  if(entryMode==="pin"&&mode==="preview")return; /* đang mở hẳn thì lia chuột không chen ngang */
-  var cat=CATALOG.vatTu.filter(function(v){return v.ma===ma;})[0];
-  if(!cat)return;
-  var it=itemV(ma);
-  entryKey="v:"+ma;entryMode=mode;
-  entryLayer.classList.toggle("preview",mode==="preview");
-  entryBody.innerHTML="";
-  var h=document.createElement("h5");h.textContent=cat.ten;
-  var meta=document.createElement("div");meta.className="meta";
-  meta.textContent=cat.ma+" · ĐVT: "+cat.dvt;
-  entryBody.appendChild(h);entryBody.appendChild(meta);
-  var grid=document.createElement("div");grid.className="fields";
-  VFIELDS.forEach(function(f){
-    var d=document.createElement("div");d.className="field";
-    d.innerHTML='<label>'+f[1]+'</label>';
-    var inp=document.createElement("input");
-    inp.type="number";inp.step="any";inp.inputMode="decimal";inp.placeholder="0";
-    inp.value=it[f[0]];
-    inp.addEventListener("input",function(){it[f[0]]=inp.value;save();refreshAll();});
-    d.appendChild(inp);grid.appendChild(d);
-  });
-  var live=document.createElement("div");live.className="live";
-  grid.appendChild(live);
-  entryBody.appendChild(grid);
-  entryLayer.classList.add("show");
-  refreshAll();
-}
 
 function openEntryM(ma,mode){
   mode=mode||"pin";
@@ -806,10 +950,20 @@ function refreshAll(){
   var duong=0,am=0,khop=0,cho=0,totalO=0;
   CATALOG.vatTu.forEach(function(v){
     var r=calcV(v.ma,map);
-    var wrap=vtGrid.querySelector('.item[data-key="v:'+v.ma+'"]');
-    if(wrap){
-      wrap.classList.toggle("done",r.filled===VFIELDS.length);
-      wrap.classList.toggle("part",r.filled>0&&r.filled<VFIELDS.length);
+    var row=vtGrid.querySelector('.vt-row[data-key="v:'+v.ma+'"]');
+    if(row){
+      row.classList.toggle("done",r.filled===VFIELDS.length);
+      row.classList.toggle("part",r.filled>0&&r.filled<VFIELDS.length);
+      var ex=row.querySelector('[data-role="xdm"]');if(ex)ex.textContent=fmt(r.xdm);
+      var tn=row.querySelector('[data-role="ton"]');if(tn)tn.textContent=fmt(r.tonCuoi);
+      var clr=row.querySelector('[data-role="cl"]');
+      if(clr){
+        clr.classList.remove("pos","neg");
+        if(!r.ready)clr.textContent="—";
+        else if(r.chenhLech<0){clr.classList.add("neg");clr.textContent="-"+fmt(Math.abs(r.chenhLech));}
+        else if(r.chenhLech>0){clr.classList.add("pos");clr.textContent="+"+fmt(r.chenhLech);}
+        else clr.textContent="0";
+      }
     }
     var card=varGrid.querySelector('.var-card[data-ma="'+v.ma+'"]');
     if(card){
@@ -900,8 +1054,8 @@ searchInput.addEventListener("input",function(){
     var r=calcV(v.ma,map);
     var c=document.createElement("div");c.className="glass-card";
     var st=r.ready?("Chênh lệch: "+(r.chenhLech<0?"-":"+")+fmt(Math.abs(r.chenhLech))+" "+v.dvt):"Chưa đủ số liệu";
-    c.innerHTML='<div><div class="nm">'+esc(v.ten)+'</div><div class="st">Vật tư · '+esc(v.ma)+' · '+st+'</div></div><span class="go">Mở nhập liệu →</span>';
-    c.addEventListener("click",function(){jumpTo("v:"+v.ma,function(){openEntryV(v.ma);});});
+    c.innerHTML='<div><div class="nm">'+esc(v.ten)+'</div><div class="st">Vật tư · '+esc(v.ma)+' · '+st+'</div></div><span class="go">Tới ô nhập →</span>';
+    c.addEventListener("click",function(){jumpTo("v:"+v.ma,function(){focusVat(v.ma);});});
     searchResults.appendChild(c);
   });
   CATALOG.monBan.forEach(function(m){
@@ -930,22 +1084,47 @@ searchInput.addEventListener("keydown",function(e){
   }
 });
 searchLayer.addEventListener("click",function(e){if(e.target===searchLayer)closeSearch();});
+
+/* Nhập nhanh theo ngày: gõ số ngày rồi Enter → mục món bán chỉ hiện ngày đó */
+var daySearch=document.getElementById("daySearch");
+daySearch.addEventListener("keydown",function(e){
+  if(e.key!=="Enter")return;
+  e.preventDefault();
+  var mm=daySearch.value.match(/\d+/);
+  var n=mm?parseInt(mm[0],10):NaN;
+  if(!(n>=1&&n<=31)){alert("Nhập số ngày từ 1 đến 31 (ví dụ: 1 hoặc ngày 1).");return;}
+  menu.classList.remove("open");burger.classList.remove("open");
+  burger.setAttribute("aria-expanded","false");menu.setAttribute("aria-hidden","true");
+  daySearch.value="";
+  setDayFilter(n-1);
+});
+
+/* Thanh tìm kiếm cạnh tiêu đề mục chênh lệch — lọc ngay trong mục này */
+document.getElementById("varSearch").addEventListener("input",applyVarFilter);
+
 document.addEventListener("keydown",function(e){
-  if(e.key==="Escape"){closeSearch();closeEntry();closePrice();
+  if(e.key==="Escape"){closeSearch();closeEntry();closeSides();
     menu.classList.remove("open");burger.classList.remove("open");}
 });
 
-/* ---------- thanh bên đơn giá (cột N của file — sửa được, có lưu) ---------- */
+/* ---------- thanh bên đơn giá & định lượng (sửa được, có lưu) ---------- */
 var priceSide=document.getElementById("priceSide");
+var dlSide=document.getElementById("dlSide");
 var priceScrim=document.getElementById("priceScrim");
-function closePrice(){priceSide.classList.remove("show");priceScrim.classList.remove("show");}
+function closeSides(){priceSide.classList.remove("show");dlSide.classList.remove("show");priceScrim.classList.remove("show");}
+priceScrim.addEventListener("click",closeSides);
+document.getElementById("priceClose").addEventListener("click",closeSides);
+document.getElementById("dlClose").addEventListener("click",closeSides);
 document.getElementById("btnPrice").addEventListener("click",function(){
-  renderPriceList();
+  renderPriceList();closeSides();
   priceSide.classList.add("show");priceScrim.classList.add("show");
   menu.classList.remove("open");burger.classList.remove("open");
 });
-document.getElementById("priceClose").addEventListener("click",closePrice);
-priceScrim.addEventListener("click",closePrice);
+document.getElementById("btnDL").addEventListener("click",function(){
+  renderDLList();closeSides();
+  dlSide.classList.add("show");priceScrim.classList.add("show");
+  menu.classList.remove("open");burger.classList.remove("open");
+});
 function renderPriceList(){
   var list=document.getElementById("priceList");list.innerHTML="";
   CATALOG.vatTu.forEach(function(v){
@@ -957,6 +1136,26 @@ function renderPriceList(){
     inp.addEventListener("input",function(){state.gia[v.ma]=inp.value;save();refreshAll();});
     row.appendChild(inp);
     list.appendChild(row);
+  });
+}
+/* Định lượng chuẩn: nhóm theo vật tư, mỗi món 1 dòng sửa được */
+function renderDLList(){
+  var list=document.getElementById("dlList");list.innerHTML="";
+  var seen={},order=[];
+  CATALOG.bom.forEach(function(b){if(!seen[b[0]]){seen[b[0]]=[];order.push(b[0]);}seen[b[0]].push(b);});
+  var vtName={};CATALOG.vatTu.forEach(function(v){vtName[v.ma]=v.ten;});
+  order.forEach(function(maVT){
+    var g=document.createElement("div");g.className="price-group";
+    g.innerHTML=esc(vtName[maVT]||maVT)+'<small>'+esc(maVT)+'</small>';
+    list.appendChild(g);
+    seen[maVT].forEach(function(b){
+      var row=document.createElement("div");row.className="price-row";
+      row.innerHTML='<span class="nm">'+esc(monMap[b[1]]||b[1])+'<small>'+esc(b[1])+'</small></span>';
+      var inp=document.createElement("input");inp.type="number";inp.step="any";
+      inp.value=dlRaw(b[0],b[1],b[2]);
+      inp.addEventListener("input",function(){state.dl[dlKey(b[0],b[1])]=inp.value;save();refreshAll();});
+      row.appendChild(inp);list.appendChild(row);
+    });
   });
 }
 
@@ -979,7 +1178,7 @@ importFile.addEventListener("change",function(){
       var d=JSON.parse(rd.result);
       if(!d||typeof d.v!=="object"||typeof d.m!=="object")throw new Error();
       if(confirm("Khôi phục số liệu từ file sao lưu? Số liệu hiện tại sẽ bị thay thế.")){
-        state=d;if(!state.gia)state.gia={};save();render();
+        state=d;if(!state.gia)state.gia={};if(!state.dl)state.dl={};save();render();
         alert("Đã khôi phục xong.");
       }
     }catch(e){alert("File sao lưu không hợp lệ.");}
@@ -988,8 +1187,8 @@ importFile.addEventListener("change",function(){
   rd.readAsText(f);
 });
 document.getElementById("btnReset").addEventListener("click",function(){
-  if(confirm("Xoá toàn bộ số liệu đã nhập để bắt đầu kỳ mới?\nNên bấm 'Sao lưu số liệu' trước khi xoá.")){
-    var g=state.gia;state={v:{},m:{},gia:g};save();render();
+  if(confirm("Xoá toàn bộ số liệu đã nhập để bắt đầu kỳ mới?\nĐơn giá và định lượng đã sửa vẫn được giữ.\nNên bấm 'Sao lưu số liệu' trước khi xoá.")){
+    var g=state.gia,dl=state.dl;state={v:{},m:{},gia:g,dl:dl};dayFilter=null;save();render();
     menu.classList.remove("open");burger.classList.remove("open");
   }
 });
