@@ -296,16 +296,17 @@
   .vt-list{display:flex;flex-direction:column;gap:10px}
   .vt-row{
     display:flex;gap:14px;align-items:stretch;
-    border-radius:16px;border:1px solid rgba(255,255,255,.75);
-    background:rgba(255,255,255,.42);
+    border-radius:16px;border:1px solid rgba(255,255,255,.95);
+    background:rgba(255,255,255,.58);
     backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 2px 6px rgba(0,0,0,.07);
+    box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(0,0,0,.1);
     padding:12px 14px;transition:border-color .2s,box-shadow .2s;
   }
+  .vt-row:hover{border-color:#b8b8bd;background:rgba(255,255,255,.72)}
   .vt-row.flash{border-color:var(--blue-focus);box-shadow:0 0 0 2px rgba(0,113,227,.35)}
   .vt-name{
     flex:0 0 206px;min-width:150px;display:flex;align-items:flex-start;gap:8px;
-    font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.224px;line-height:1.3;
+    font-size:15px;font-weight:700;color:#000;letter-spacing:-.224px;line-height:1.3;
   }
   .vt-name .dot{width:8px;height:8px;border-radius:50%;background:#d2d2d7;flex:none;margin-top:5px}
   .vt-row.done .vt-name .dot,.mon-row.done .vt-name .dot{background:var(--pos)}
@@ -1193,12 +1194,21 @@ document.getElementById("btnReset").addEventListener("click",function(){
   }
 });
 
-/* ---------- hiệu ứng cuộn: mờ dần + thu nhẹ ---------- */
+/* ---------- hiệu ứng cuộn: mờ dần + thu nhẹ ----------
+   Tính theo số pixel đang hiện trong màn hình (không dùng tỷ lệ toàn khối,
+   vì khối cao hơn màn hình sẽ không bao giờ đạt tỷ lệ và bị mờ vĩnh viễn). */
 var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 if(!reduced&&"IntersectionObserver" in window){
+  var ths=[];for(var ti=0;ti<=50;ti++)ths.push(ti/50);
   var io=new IntersectionObserver(function(entries){
-    entries.forEach(function(en){en.target.classList.toggle("dim",en.intersectionRatio<0.25);});
-  },{threshold:[0,.25,.6,1],rootMargin:"-6% 0px -6% 0px"});
+    var vh=window.innerHeight||document.documentElement.clientHeight;
+    entries.forEach(function(en){
+      var r=en.boundingClientRect;
+      var visible=Math.min(r.bottom,vh)-Math.max(r.top,0);
+      var need=Math.min(vh*0.22,r.height*0.3);
+      en.target.classList.toggle("dim",visible<need);
+    });
+  },{threshold:ths});
   document.querySelectorAll(".fx").forEach(function(el){io.observe(el);});
 }
 
