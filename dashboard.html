@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<meta charset="utf-8">
+<title>CKK05 — Dashboard quản trị</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --blue:#0066cc;--blue-focus:#0071e3;--ink:#1d1d1f;--ink-48:#7a7a7a;--muted:#6e6e73;
+    --hairline:#e0e0e0;--divider:#f0f0f0;--parchment:#f5f5f7;
+    --pos:#1d9d50;--neg:#e30000;--red-logo:#d42a20;
+    --font-display:"SF Pro Display",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --font-text:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --shadow:rgba(0,0,0,.22) 3px 5px 30px 0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e2e2e8;color:var(--ink);font-family:var(--font-text);font-size:15px;letter-spacing:-.2px;min-height:100vh}
+  button{font-family:var(--font-text)}
+  button:active{transform:scale(.95)}
+  button:focus-visible{outline:2px solid var(--blue-focus);outline-offset:2px}
+
+  header{
+    text-align:center;padding:44px 20px 26px;
+    background:radial-gradient(600px 300px at 50% -10%,rgba(212,42,32,.10),transparent 65%),#e6e6ec;
+  }
+  header h1{font-family:var(--font-display);font-size:clamp(26px,4.5vw,38px);font-weight:600;letter-spacing:-.02em;margin:0}
+  header h1 em{font-style:normal;color:var(--red-logo)}
+  header p{color:var(--muted);font-size:13px;margin:8px 0 0}
+
+  main{max-width:960px;margin:0 auto;padding:24px 20px 80px;display:flex;flex-direction:column;gap:26px}
+  .panel{
+    background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);border-radius:18px;
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(0,0,0,.08);padding:20px;
+  }
+  .panel h2{font-family:var(--font-display);font-size:20px;font-weight:600;margin:0 0 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .row{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:13px 4px;border-bottom:1px solid var(--divider);
+  }
+  .row:last-child{border-bottom:none}
+  .row .who{flex:1;min-width:180px}
+  .row .who b{display:block;font-size:15px}
+  .row .who small{color:var(--ink-48);font-size:12px}
+  .stat{display:flex;flex-direction:column;min-width:92px}
+  .stat span{font-size:10px;color:var(--ink-48);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .stat b{font-size:16px;font-variant-numeric:tabular-nums}
+  .stat b.pos{color:var(--pos)}
+  .stat b.neg{color:var(--neg)}
+  .row select{padding:8px 10px;border-radius:9px;border:1px solid var(--hairline);background:#fff;font:inherit;font-size:13px}
+  .btn-blue{border:none;background:var(--blue);color:#fff;padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn-ghost{border:1px solid var(--hairline);background:#fff;color:var(--ink);padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;cursor:pointer}
+  .btn-ok{border:none;background:var(--pos);color:#fff;padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .empty{color:var(--ink-48);font-size:13px;padding:14px 4px}
+  .note{font-size:12px;color:var(--ink-48);line-height:1.6;margin:10px 0 0}
+
+  .auth-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:#e2e2e8;padding:20px}
+  .auth-card{width:min(390px,100%);background:#fff;border:1px solid var(--hairline);border-radius:18px;padding:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+  .auth-card h2{font-family:var(--font-display);font-size:24px;font-weight:600;margin:0}
+  .auth-card input{padding:12px 14px;border-radius:11px;border:1px solid var(--hairline);background:var(--parchment);font:inherit;font-size:15px}
+  .auth-card input:focus{outline:none;border-color:var(--blue-focus);background:#fff;box-shadow:0 0 0 2px rgba(0,113,227,.25)}
+  .auth-msg{font-size:13px;color:var(--neg);min-height:18px}
+  .auth-note{font-size:12px;color:var(--ink-48);line-height:1.5}
+  .topbar{position:fixed;top:14px;right:16px;z-index:60;display:none;gap:10px;align-items:center;
+    background:var(--ink);color:#fff;padding:8px 14px;border-radius:9999px;font-size:12px}
+  .topbar button{border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;padding:4px 10px;border-radius:9999px;font:inherit;font-size:11px;cursor:pointer}
+</style>
+
+<div class="auth-layer" id="authLayer">
+  <div class="auth-card">
+    <h2>Dashboard — Đăng nhập Admin</h2>
+    <div class="auth-note">File Chủ của hệ thống CKK05. Chỉ quản trị viên xem được danh sách và số liệu toàn bộ nhân viên.</div>
+    <input type="email" id="auEmail" placeholder="Email" autocomplete="username">
+    <input type="password" id="auPass" placeholder="Mật khẩu" autocomplete="current-password">
+    <div class="auth-msg" id="auMsg"></div>
+    <button type="button" class="btn-blue" id="auMain">Đăng nhập</button>
+  </div>
+</div>
+
+<div class="topbar" id="topbar"></div>
+
+<header>
+  <h1>Dashboard <em>CKK05</em></h1>
+  <p>File Chủ — quản lý nhân viên và tổng hợp Xuất Nhập Tồn · by Nguyễn Khang Hy</p>
+</header>
+
+<main id="main" style="display:none">
+  <section class="panel">
+    <h2>Chờ duyệt <button type="button" class="btn-ghost" id="btnReload">↻ Tải lại</button></h2>
+    <div id="pendingList"><div class="empty">Đang tải…</div></div>
+    <p class="note">Nhân viên tự đăng ký trên trang nhập liệu sẽ hiện ở đây. Bấm <b>Duyệt</b> để cấp quyền — mỗi người được duyệt có một bảng XNT riêng, chỉ họ và bạn xem được.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Bảng của từng nhân viên</h2>
+    <div id="memberList"><div class="empty">Đang tải…</div></div>
+    <p class="note">Bấm <b>Mở bảng</b> để xem và nhập trực tiếp vào bảng của nhân viên đó. Vai trò: <b>member</b> = nhân viên, <b>admin</b> = toàn quyền như bạn, <b>pending</b> = tạm khoá.</p>
+  </section>
+</main>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+(async function(){
+var layer=document.getElementById("authLayer");
+var cfg=window.FIREBASE_CONFIG;
+var elMsg=document.getElementById("auMsg");
+function msg(t,ok){elMsg.textContent=t||"";elMsg.style.color=ok?"var(--pos)":"var(--neg)";}
+if(!cfg||!cfg.apiKey||String(cfg.apiKey).indexOf("PASTE")===0){
+  msg("Chưa dán cấu hình Firebase vào firebase-config.js — xem HUONG-DAN-FIREBASE.md.");
+  document.getElementById("auMain").disabled=true;
+  return;
+}
+var appM=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+var authM=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+var fsM=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+var app=appM.initializeApp(cfg);
+var auth=authM.getAuth(app);
+var db=fsM.getFirestore(app);
+
+function fmt2(n){return (Math.round((n||0)*100)/100).toLocaleString("vi-VN",{maximumFractionDigits:2});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+document.getElementById("auMain").addEventListener("click",doLogin);
+document.getElementById("auPass").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+async function doLogin(){
+  var em=document.getElementById("auEmail").value.trim();
+  var pw=document.getElementById("auPass").value;
+  if(!em||!pw){msg("Nhập email và mật khẩu.");return;}
+  msg("Đang xử lý…",true);
+  try{await authM.signInWithEmailAndPassword(auth,em,pw);}
+  catch(e){msg("Sai email hoặc mật khẩu.");}
+}
+
+authM.onAuthStateChanged(auth,async function(user){
+  if(!user){layer.style.display="flex";document.getElementById("main").style.display="none";return;}
+  try{
+    var usnap=await fsM.getDoc(fsM.doc(db,"users",user.uid));
+    if(!usnap.exists()||usnap.data().role!=="admin"){
+      msg("Tài khoản này không phải Admin. Vào trang nhập liệu app.html để làm việc.");
+      await authM.signOut(auth);
+      return;
+    }
+    layer.style.display="none";
+    document.getElementById("main").style.display="";
+    var tb=document.getElementById("topbar");
+    tb.style.display="flex";
+    tb.innerHTML='👑 '+esc(user.email)+' <button type="button" id="outBtn">Đăng xuất</button>';
+    document.getElementById("outBtn").addEventListener("click",function(){authM.signOut(auth);location.reload();});
+    loadAll();
+  }catch(e){msg("Lỗi kiểm tra quyền: "+(e.code||e.message));}
+});
+document.getElementById("btnReload").addEventListener("click",loadAll);
+
+async function loadAll(){
+  var pend=document.getElementById("pendingList");
+  var memb=document.getElementById("memberList");
+  pend.innerHTML='<div class="empty">Đang tải…</div>';
+  memb.innerHTML='<div class="empty">Đang tải…</div>';
+  var us=await fsM.getDocs(fsM.collection(db,"users"));
+  var users=[];us.forEach(function(d){users.push({uid:d.id,data:d.data()});});
+  /* --- chờ duyệt --- */
+  var pending=users.filter(function(u){return u.data.role==="pending";});
+  pend.innerHTML=pending.length?"":'<div class="empty">Không có tài khoản nào chờ duyệt.</div>';
+  pending.forEach(function(u){
+    var r=document.createElement("div");r.className="row";
+    r.innerHTML='<div class="who"><b>'+esc(u.data.name)+'</b><small>'+esc(u.data.email)+'</small></div>';
+    var ok=document.createElement("button");ok.type="button";ok.className="btn-ok";ok.textContent="✓ Duyệt";
+    ok.addEventListener("click",async function(){
+      await fsM.updateDoc(fsM.doc(db,"users",u.uid),{role:"member"});loadAll();
+    });
+    r.appendChild(ok);pend.appendChild(r);
+  });
+  /* --- thành viên + tóm tắt bảng --- */
+  var members=users.filter(function(u){return u.data.role!=="pending";});
+  memb.innerHTML=members.length?"":'<div class="empty">Chưa có thành viên nào.</div>';
+  for(var i=0;i<members.length;i++){
+    var u=members[i];
+    var r=document.createElement("div");r.className="row";
+    var s=null,upd="";
+    try{
+      var ss=await fsM.getDoc(fsM.doc(db,"sheets",u.uid));
+      if(ss.exists()){
+        s=ss.data().summary||null;
+        var ts=ss.data().updatedAt;
+        if(ts&&ts.toDate)upd=ts.toDate().toLocaleString("vi-VN");
+      }
+    }catch(e){}
+    var stats=s
+      ?'<div class="stat"><span>Thành tiền</span><b class="'+(s.totalO>0?"pos":(s.totalO<0?"neg":""))+'">'+fmt2(s.totalO)+'</b></div>'
+       +'<div class="stat"><span>Dương</span><b class="pos">'+(s.duong||0)+'</b></div>'
+       +'<div class="stat"><span>Âm</span><b class="neg">'+(s.am||0)+'</b></div>'
+       +'<div class="stat"><span>Khớp</span><b>'+(s.khop||0)+'</b></div>'
+      :'<div class="stat"><span>Số liệu</span><b>—</b></div>';
+    r.innerHTML='<div class="who"><b>'+esc(u.data.name)+(u.data.role==="admin"?" 👑":"")+'</b>'
+      +'<small>'+esc(u.data.email)+(upd?(" · cập nhật "+upd):"")+'</small></div>'+stats;
+    var sel=document.createElement("select");
+    ["member","admin","pending"].forEach(function(role){
+      var o=document.createElement("option");o.value=role;o.textContent=role;
+      if(u.data.role===role)o.selected=true;sel.appendChild(o);
+    });
+    (function(uid){
+      sel.addEventListener("change",async function(){
+        await fsM.updateDoc(fsM.doc(db,"users",uid),{role:sel.value});loadAll();
+      });
+    })(u.uid);
+    r.appendChild(sel);
+    var a=document.createElement("a");a.className="btn-blue";
+    a.href="app.html?uid="+encodeURIComponent(u.uid);a.textContent="Mở bảng →";
+    r.appendChild(a);
+    memb.appendChild(r);
+  }
+}
+})();
+</script>
+</html>
