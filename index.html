@@ -370,6 +370,44 @@
   .sec-search:focus{outline:none;border-color:var(--blue-on-dark);box-shadow:0 0 0 2px rgba(41,151,255,.3)}
   .var-card.hidden{display:none}
 
+  /* ---------- nút ＋ thêm vật tư & form ---------- */
+  .add-row{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:16px;border-radius:16px;border:2px dashed rgba(0,102,204,.5);
+    background:rgba(0,102,204,.07);color:var(--blue);
+    font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;
+  }
+  .add-row:hover{background:rgba(0,102,204,.14)}
+  .add-row .plus{font-size:22px;line-height:1}
+  .add-form{
+    display:none;flex-direction:column;gap:14px;padding:18px;border-radius:16px;
+    border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.72);
+    backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);
+    box-shadow:inset 0 1px 0 #fff,0 4px 14px rgba(0,0,0,.1);
+  }
+  .add-form.show{display:flex}
+  .add-form .af-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .add-form select{
+    width:100%;padding:8px;border-radius:8px;border:1px solid var(--hairline);
+    background:#fff;color:var(--ink);font:inherit;font-size:14px;
+  }
+  .add-form input[type=text]{text-align:left}
+  .af-actions{display:flex;gap:10px;justify-content:flex-end}
+  .btn-blue{
+    border:none;background:var(--blue);color:#fff;padding:11px 22px;border-radius:9999px;
+    font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+  }
+  .btn-ghost{
+    border:1px solid var(--hairline);background:#fff;color:var(--ink);padding:11px 22px;
+    border-radius:9999px;font:inherit;font-size:14px;cursor:pointer;
+  }
+  .del-btn{
+    border:1px solid rgba(227,0,0,.4);background:#fff;color:var(--neg);
+    padding:7px 14px;border-radius:9999px;font:inherit;font-size:12px;font-weight:700;
+    cursor:pointer;flex:none;
+  }
+  .del-btn:hover{background:rgba(227,0,0,.08)}
+
   /* nhóm trong thanh bên định lượng */
   .price-group{font-size:13px;font-weight:700;color:var(--ink);margin:14px 0 4px;letter-spacing:-.224px}
   .price-group:first-child{margin-top:0}
@@ -443,6 +481,7 @@
   <h4>Đơn giá &amp; định lượng</h4>
   <button class="menu-item" id="btnPrice"><span class="ic">₫</span> Đơn giá vật tư (xem &amp; sửa)</button>
   <button class="menu-item" id="btnDL"><span class="ic">⚖</span> Định lượng chuẩn (xem &amp; sửa)</button>
+  <button class="menu-item" id="btnDel"><span class="ic">🗑</span> Xoá vật tư (hàng ngưng bán)</button>
   <h4>Dữ liệu</h4>
   <button class="menu-item" id="btnExport"><span class="ic">⭳</span> Sao lưu số liệu (tải file)</button>
   <button class="menu-item" id="btnImport"><span class="ic">⭱</span> Khôi phục từ file sao lưu</button>
@@ -469,6 +508,10 @@
 <aside class="price-side" id="dlSide" aria-label="Định lượng chuẩn">
   <h3>Định lượng chuẩn <button class="close-x" id="dlClose" aria-label="Đóng" style="float:none">✕</button></h3>
   <div class="price-list" id="dlList"></div>
+</aside>
+<aside class="price-side" id="delSide" aria-label="Xoá vật tư">
+  <h3>Xoá vật tư <button class="close-x" id="delClose" aria-label="Đóng" style="float:none">✕</button></h3>
+  <div class="price-list" id="delList"></div>
 </aside>
 
 <header class="hero fx">
@@ -709,9 +752,31 @@ function load(){
   return {v:{},m:{},gia:{},dl:{}};
 }
 var state=load();
-if(!state.gia)state.gia={};
-if(!state.dl)state.dl={};
+function ensureState(){
+  if(!state.gia)state.gia={};
+  if(!state.dl)state.dl={};
+  if(!state.custom)state.custom={vatTu:[],monBan:[],bom:[]};
+  if(!state.removedVT)state.removedVT=[];
+  if(!state.removedMon)state.removedMon=[];
+  if(!state.seq)state.seq=1;
+}
+ensureState();
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}}
+
+/* Danh mục hiệu lực = danh mục file Excel − mục đã xoá + mục tự thêm */
+function allVatTu(){
+  return CATALOG.vatTu.filter(function(v){return state.removedVT.indexOf(v.ma)<0;})
+    .concat(state.custom.vatTu);
+}
+function allMonBan(){
+  return CATALOG.monBan.filter(function(m){return state.removedMon.indexOf(m.ma)<0;})
+    .concat(state.custom.monBan);
+}
+function allBom(){
+  return CATALOG.bom.filter(function(b){
+    return state.removedVT.indexOf(b[0])<0&&state.removedMon.indexOf(b[1])<0;
+  }).concat(state.custom.bom);
+}
 
 function itemV(ma){
   if(!state.v[ma]){
@@ -729,9 +794,14 @@ function itemM(ma){
 }
 var giaGoc={};
 CATALOG.vatTu.forEach(function(v){giaGoc[v.ma]=v.gia;});
+function giaGocOf(ma){
+  if(giaGoc[ma]!==undefined)return giaGoc[ma];
+  var c=state.custom.vatTu.filter(function(v){return v.ma===ma;})[0];
+  return c?(parseFloat(c.gia)||0):0;
+}
 function gia(ma){
   var g=state.gia[ma];
-  return (g===undefined||g===null||String(g).trim()==="")?giaGoc[ma]:parseFloat(g)||0;
+  return (g===undefined||g===null||String(g).trim()==="")?giaGocOf(ma):parseFloat(g)||0;
 }
 /* Định lượng chuẩn (cột F) — sửa được, có lưu, mặc định lấy từ file */
 function dlKey(maVT,maMon){return maVT+"|"+maMon;}
@@ -743,7 +813,10 @@ function dlVal(maVT,maMon,def){
   var g=state.dl[dlKey(maVT,maMon)];
   return (g===undefined||g===null||String(g).trim()==="")?def:(parseFloat(g)||0);
 }
-var monMap={};CATALOG.monBan.forEach(function(m){monMap[m.ma]=m.ten;});
+function monName(ma){
+  var m=allMonBan().filter(function(x){return x.ma===ma;})[0];
+  return m?m.ten:ma;
+}
 
 function num(v){var n=parseFloat(String(v).replace(",","."));return isFinite(n)?n:0;}
 function fmt(n){
@@ -763,7 +836,7 @@ function tongBan(maMon){
 /* Xuất định mức toàn bộ vật tư = SUMIF bảng định mức (H45:H195) */
 function xdmMap(){
   var map={};
-  CATALOG.bom.forEach(function(b){
+  allBom().forEach(function(b){
     map[b[0]]=(map[b[0]]||0)+dlVal(b[0],b[1],b[2])*tongBan(b[1]);
   });
   Object.keys(CATALOG.bomAlias).forEach(function(target){
@@ -810,7 +883,7 @@ function makePill(key,name,openFn){
 /* Vật tư: mỗi món 1 hàng — tên bên trái, 7 ô nhập + 3 ô tính bên cạnh */
 function buildVat(){
   vtGrid.innerHTML="";
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     var it=itemV(v.ma);
     var row=document.createElement("div");row.className="vt-row item";row.dataset.key="v:"+v.ma;
     var name=document.createElement("div");name.className="vt-name";
@@ -834,6 +907,64 @@ function buildVat(){
     row.appendChild(fields);
     vtGrid.appendChild(row);
   });
+  buildAddRow();
+}
+
+/* Nút ＋ cuối danh sách: thêm vật tư mới + món bán + định lượng + đơn giá cùng lúc */
+function buildAddRow(){
+  var plus=document.createElement("button");plus.type="button";plus.className="add-row";
+  plus.innerHTML='<span class="plus">＋</span> Thêm vật tư mới';
+  var form=document.createElement("div");form.className="add-form";
+  var cats=[];
+  allMonBan().forEach(function(m){if(cats.indexOf(m.cat)<0)cats.push(m.cat);});
+  var opts=cats.map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join("")
+    +'<option value="__new">＋ Nhóm mới…</option>';
+  form.innerHTML=
+    '<div class="af-grid">'
+    +'<div class="vt-f"><label>Tên vật tư mới</label><input type="text" data-af="ten" placeholder="VD: Bò wagyu BTP"></div>'
+    +'<div class="vt-f"><label>ĐVT</label><input type="text" data-af="dvt" value="Kg"></div>'
+    +'<div class="vt-f"><label>Đơn giá</label><input type="number" step="any" data-af="gia" placeholder="0"></div>'
+    +'<div class="vt-f"><label>Tên món bán (sheet 2)</label><input type="text" data-af="tenMon" placeholder="Để trống = lấy tên vật tư"></div>'
+    +'<div class="vt-f"><label>Nhóm hiển thị</label><select data-af="cat">'+opts+'</select></div>'
+    +'<div class="vt-f" data-af-wrap="newcat" style="display:none"><label>Tên nhóm mới</label><input type="text" data-af="newcat" placeholder="VD: MÓN MỚI"></div>'
+    +'<div class="vt-f"><label>Định lượng chuẩn (1 suất)</label><input type="number" step="any" data-af="dl" placeholder="1"></div>'
+    +'</div>'
+    +'<div class="af-actions"><button type="button" class="btn-ghost" data-af="cancel">Huỷ</button>'
+    +'<button type="button" class="btn-blue" data-af="ok">Thêm (Enter)</button></div>';
+  plus.addEventListener("click",function(){
+    form.classList.add("show");plus.style.display="none";
+    form.querySelector('[data-af="ten"]').focus();
+  });
+  form.querySelector('[data-af="cat"]').addEventListener("change",function(){
+    form.querySelector('[data-af-wrap="newcat"]').style.display=this.value==="__new"?"":"none";
+  });
+  function doAdd(){
+    var get=function(k){var el=form.querySelector('[data-af="'+k+'"]');return el?String(el.value).trim():"";};
+    var ten=get("ten");
+    if(!ten){alert("Nhập tên vật tư mới trước đã.");form.querySelector('[data-af="ten"]').focus();return;}
+    var catSel=get("cat");
+    var cat=catSel==="__new"?(get("newcat")||"MÓN MỚI").toUpperCase():catSel;
+    var id=state.seq++;
+    var maVT="VT-MOI-"+id,maMon="MON-MOI-"+id;
+    state.custom.vatTu.push({ma:maVT,ten:ten,dvt:get("dvt")||"Kg",gia:parseFloat(get("gia"))||0});
+    state.custom.monBan.push({ma:maMon,ten:get("tenMon")||ten,cat:cat});
+    state.custom.bom.push([maVT,maMon,parseFloat(get("dl"))||1]);
+    save();render();
+    var row=vtGrid.querySelector('.vt-row[data-key="v:'+maVT+'"]');
+    if(row){
+      row.scrollIntoView({behavior:"smooth",block:"center"});
+      row.classList.add("flash");setTimeout(function(){row.classList.remove("flash");},2500);
+    }
+  }
+  form.addEventListener("keydown",function(e){
+    if(e.key==="Enter"){e.preventDefault();doAdd();}
+    if(e.key==="Escape"){form.classList.remove("show");plus.style.display="";}
+  });
+  form.querySelector('[data-af="ok"]').addEventListener("click",doAdd);
+  form.querySelector('[data-af="cancel"]').addEventListener("click",function(){
+    form.classList.remove("show");plus.style.display="";
+  });
+  vtGrid.appendChild(plus);vtGrid.appendChild(form);
 }
 
 /* Món bán: mặc định chip (bấm mở 31 ngày); nhập nhanh theo ngày = mỗi món 1 ô */
@@ -847,7 +978,7 @@ function buildMon(){
     banner.appendChild(b);monWrap.appendChild(banner);
   }
   var cats={};
-  CATALOG.monBan.forEach(function(m){
+  allMonBan().forEach(function(m){
     if(!cats[m.cat]){
       var lb=document.createElement("div");lb.className="cat-label";lb.textContent=m.cat;monWrap.appendChild(lb);
       cats[m.cat]=document.createElement("div");
@@ -871,7 +1002,7 @@ function buildMon(){
 
 function buildVar(){
   varGrid.innerHTML="";
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     var c=document.createElement("div");c.className="var-card";c.dataset.ma=v.ma;
     c.innerHTML='<span class="nm">'+esc(v.ten)+'</span><span class="val"></span><span class="sub"></span>';
     varGrid.appendChild(c);
@@ -892,7 +1023,7 @@ function focusVat(ma){
 function applyVarFilter(){
   var el=document.getElementById("varSearch");
   var q=el?el.value.trim().toLowerCase():"";
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     var card=varGrid.querySelector('.var-card[data-ma="'+v.ma+'"]');
     if(!card)return;
     var hit=!q||v.ten.toLowerCase().indexOf(q)>=0||v.ma.toLowerCase().indexOf(q)>=0;
@@ -914,7 +1045,7 @@ entryLayer.addEventListener("click",function(e){if(e.target===entryLayer)closeEn
 function openEntryM(ma,mode){
   mode=mode||"pin";
   if(entryMode==="pin"&&mode==="preview")return;
-  var cat=CATALOG.monBan.filter(function(m){return m.ma===ma;})[0];
+  var cat=allMonBan().filter(function(m){return m.ma===ma;})[0];
   if(!cat)return;
   var it=itemM(ma);
   entryKey="m:"+ma;entryMode=mode;
@@ -949,7 +1080,7 @@ function openEntryM(ma,mode){
 function refreshAll(){
   var map=xdmMap();
   var duong=0,am=0,khop=0,cho=0,totalO=0;
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     var r=calcV(v.ma,map);
     var row=vtGrid.querySelector('.vt-row[data-key="v:'+v.ma+'"]');
     if(row){
@@ -987,7 +1118,7 @@ function refreshAll(){
   amtEl.classList.remove("pos","neg");
   if(totalO>0)amtEl.classList.add("pos");
   else if(totalO<0)amtEl.classList.add("neg");
-  CATALOG.monBan.forEach(function(m){
+  allMonBan().forEach(function(m){
     var wrap=monWrap.querySelector('.item[data-key="m:'+m.ma+'"]');
     if(wrap){
       var has=tongBan(m.ma)>0;
@@ -1049,7 +1180,7 @@ searchInput.addEventListener("input",function(){
   if(!q){closeSearch();return;}
   searchResults.innerHTML="";
   var map=xdmMap(),found=0;
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     if(v.ten.toLowerCase().indexOf(q)<0&&v.ma.toLowerCase().indexOf(q)<0)return;
     found++;
     var r=calcV(v.ma,map);
@@ -1059,7 +1190,7 @@ searchInput.addEventListener("input",function(){
     c.addEventListener("click",function(){jumpTo("v:"+v.ma,function(){focusVat(v.ma);});});
     searchResults.appendChild(c);
   });
-  CATALOG.monBan.forEach(function(m){
+  allMonBan().forEach(function(m){
     if(m.ten.toLowerCase().indexOf(q)<0&&m.ma.toLowerCase().indexOf(q)<0)return;
     found++;
     var c=document.createElement("div");c.className="glass-card";
@@ -1111,11 +1242,13 @@ document.addEventListener("keydown",function(e){
 /* ---------- thanh bên đơn giá & định lượng (sửa được, có lưu) ---------- */
 var priceSide=document.getElementById("priceSide");
 var dlSide=document.getElementById("dlSide");
+var delSide=document.getElementById("delSide");
 var priceScrim=document.getElementById("priceScrim");
-function closeSides(){priceSide.classList.remove("show");dlSide.classList.remove("show");priceScrim.classList.remove("show");}
+function closeSides(){priceSide.classList.remove("show");dlSide.classList.remove("show");delSide.classList.remove("show");priceScrim.classList.remove("show");}
 priceScrim.addEventListener("click",closeSides);
 document.getElementById("priceClose").addEventListener("click",closeSides);
 document.getElementById("dlClose").addEventListener("click",closeSides);
+document.getElementById("delClose").addEventListener("click",closeSides);
 document.getElementById("btnPrice").addEventListener("click",function(){
   renderPriceList();closeSides();
   priceSide.classList.add("show");priceScrim.classList.add("show");
@@ -1126,14 +1259,64 @@ document.getElementById("btnDL").addEventListener("click",function(){
   dlSide.classList.add("show");priceScrim.classList.add("show");
   menu.classList.remove("open");burger.classList.remove("open");
 });
+document.getElementById("btnDel").addEventListener("click",function(){
+  renderDelList();closeSides();
+  delSide.classList.add("show");priceScrim.classList.add("show");
+  menu.classList.remove("open");burger.classList.remove("open");
+});
+
+/* ---------- xoá vật tư: xoá dây chuyền món bán / đơn giá / định lượng / số liệu ---------- */
+function renderDelList(){
+  var list=document.getElementById("delList");list.innerHTML="";
+  allVatTu().forEach(function(v){
+    var row=document.createElement("div");row.className="price-row";
+    row.innerHTML='<span class="nm">'+esc(v.ten)+'<small>'+esc(v.ma)+' · '+esc(v.dvt)+'</small></span>';
+    var b=document.createElement("button");b.type="button";b.className="del-btn";b.textContent="Xoá";
+    b.addEventListener("click",function(){deleteVat(v.ma,v.ten);});
+    row.appendChild(b);
+    list.appendChild(row);
+  });
+}
+function deleteVat(ma,ten){
+  /* món bán chỉ thuộc riêng vật tư này (mọi liên kết định mức đều trỏ về nó) sẽ bị xoá kèm */
+  var byMon={};
+  allBom().forEach(function(b){(byMon[b[1]]=byMon[b[1]]||[]).push(b[0]);});
+  var linkedMons=[];
+  Object.keys(byMon).forEach(function(mon){
+    var vts=byMon[mon];
+    var onlyThis=vts.indexOf(ma)>=0&&vts.every(function(x){return x===ma;});
+    if(onlyThis)linkedMons.push(mon);
+  });
+  var msg='Xoá vật tư "'+ten+'"?\n\nSẽ xoá kèm: đơn giá, định lượng chuẩn và số liệu đã nhập của món này'
+    +(linkedMons.length?('\n+ '+linkedMons.length+' món bán chỉ thuộc vật tư này: '+linkedMons.map(monName).join(", ")):'')
+    +'\n\nKhông thể hoàn tác (nên Sao lưu số liệu trước).';
+  if(!confirm(msg))return;
+  var idx=-1;
+  state.custom.vatTu.forEach(function(v,i){if(v.ma===ma)idx=i;});
+  if(idx>=0)state.custom.vatTu.splice(idx,1);
+  else state.removedVT.push(ma);
+  state.custom.bom=state.custom.bom.filter(function(b){return b[0]!==ma;});
+  linkedMons.forEach(function(mon){
+    var mi=-1;
+    state.custom.monBan.forEach(function(m,i){if(m.ma===mon)mi=i;});
+    if(mi>=0)state.custom.monBan.splice(mi,1);
+    else state.removedMon.push(mon);
+    state.custom.bom=state.custom.bom.filter(function(b){return b[1]!==mon;});
+    delete state.m[mon];
+  });
+  delete state.v[ma];
+  delete state.gia[ma];
+  Object.keys(state.dl).forEach(function(k){if(k.indexOf(ma+"|")===0)delete state.dl[k];});
+  save();render();renderDelList();
+}
 function renderPriceList(){
   var list=document.getElementById("priceList");list.innerHTML="";
-  CATALOG.vatTu.forEach(function(v){
+  allVatTu().forEach(function(v){
     var row=document.createElement("div");row.className="price-row";
     row.innerHTML='<span class="nm">'+esc(v.ten)+'<small>'+esc(v.ma)+' · '+esc(v.dvt)+'</small></span>';
     var inp=document.createElement("input");
     inp.type="number";inp.step="any";
-    inp.value=(state.gia[v.ma]!==undefined&&state.gia[v.ma]!==null&&String(state.gia[v.ma]).trim()!=="")?state.gia[v.ma]:giaGoc[v.ma];
+    inp.value=(state.gia[v.ma]!==undefined&&state.gia[v.ma]!==null&&String(state.gia[v.ma]).trim()!=="")?state.gia[v.ma]:giaGocOf(v.ma);
     inp.addEventListener("input",function(){state.gia[v.ma]=inp.value;save();refreshAll();});
     row.appendChild(inp);
     list.appendChild(row);
@@ -1143,15 +1326,15 @@ function renderPriceList(){
 function renderDLList(){
   var list=document.getElementById("dlList");list.innerHTML="";
   var seen={},order=[];
-  CATALOG.bom.forEach(function(b){if(!seen[b[0]]){seen[b[0]]=[];order.push(b[0]);}seen[b[0]].push(b);});
-  var vtName={};CATALOG.vatTu.forEach(function(v){vtName[v.ma]=v.ten;});
+  allBom().forEach(function(b){if(!seen[b[0]]){seen[b[0]]=[];order.push(b[0]);}seen[b[0]].push(b);});
+  var vtName={};allVatTu().forEach(function(v){vtName[v.ma]=v.ten;});
   order.forEach(function(maVT){
     var g=document.createElement("div");g.className="price-group";
     g.innerHTML=esc(vtName[maVT]||maVT)+'<small>'+esc(maVT)+'</small>';
     list.appendChild(g);
     seen[maVT].forEach(function(b){
       var row=document.createElement("div");row.className="price-row";
-      row.innerHTML='<span class="nm">'+esc(monMap[b[1]]||b[1])+'<small>'+esc(b[1])+'</small></span>';
+      row.innerHTML='<span class="nm">'+esc(monName(b[1]))+'<small>'+esc(b[1])+'</small></span>';
       var inp=document.createElement("input");inp.type="number";inp.step="any";
       inp.value=dlRaw(b[0],b[1],b[2]);
       inp.addEventListener("input",function(){state.dl[dlKey(b[0],b[1])]=inp.value;save();refreshAll();});
@@ -1179,7 +1362,7 @@ importFile.addEventListener("change",function(){
       var d=JSON.parse(rd.result);
       if(!d||typeof d.v!=="object"||typeof d.m!=="object")throw new Error();
       if(confirm("Khôi phục số liệu từ file sao lưu? Số liệu hiện tại sẽ bị thay thế.")){
-        state=d;if(!state.gia)state.gia={};if(!state.dl)state.dl={};save();render();
+        state=d;ensureState();save();render();
         alert("Đã khôi phục xong.");
       }
     }catch(e){alert("File sao lưu không hợp lệ.");}
@@ -1188,8 +1371,10 @@ importFile.addEventListener("change",function(){
   rd.readAsText(f);
 });
 document.getElementById("btnReset").addEventListener("click",function(){
-  if(confirm("Xoá toàn bộ số liệu đã nhập để bắt đầu kỳ mới?\nĐơn giá và định lượng đã sửa vẫn được giữ.\nNên bấm 'Sao lưu số liệu' trước khi xoá.")){
-    var g=state.gia,dl=state.dl;state={v:{},m:{},gia:g,dl:dl};dayFilter=null;save();render();
+  if(confirm("Xoá toàn bộ số liệu đã nhập để bắt đầu kỳ mới?\nĐơn giá, định lượng và các vật tư tự thêm/đã xoá vẫn được giữ.\nNên bấm 'Sao lưu số liệu' trước khi xoá.")){
+    state={v:{},m:{},gia:state.gia,dl:state.dl,custom:state.custom,
+      removedVT:state.removedVT,removedMon:state.removedMon,seq:state.seq};
+    dayFilter=null;save();render();
     menu.classList.remove("open");burger.classList.remove("open");
   }
 });
