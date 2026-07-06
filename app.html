@@ -1,4 +1,4 @@
-<title>CKK05 — Bảng nhập của nhân viên</title>
+<title>Chang Kang Kung CKK — Bảng nhập của nhân viên</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   /* ============ DESIGN.md (apple) — token hoá ============ */
@@ -482,7 +482,7 @@
 
 <div class="auth-layer" id="authLayer">
   <div class="auth-card">
-    <h2>CKK05 — Đăng nhập</h2>
+    <h2>Chang Kang Kung CKK — Đăng nhập</h2>
     <div class="auth-note">Bảng nhập liệu theo tài khoản. Dữ liệu lưu trên đám mây — nhập ở đâu quản trị viên cũng thấy.</div>
     <input type="text" id="auName" placeholder="Họ tên (VD: Nguyễn Văn A)" style="display:none" autocomplete="name">
     <input type="email" id="auEmail" placeholder="Email" autocomplete="username">
@@ -553,7 +553,7 @@
     <span class="lb">Tổng thành tiền</span>
     <span class="amt" id="heroTotalAmt">0</span>
   </div>
-  <h1 class="brand">Chang Kang Kung <em>CKK05</em><small>XUẤT · NHẬP · TỒN</small></h1>
+  <h1 class="brand">Chang Kang Kung <em>CKK</em><small>XUẤT · NHẬP · TỒN</small></h1>
 </header>
 
 <svg width="0" height="0" style="position:absolute">
@@ -593,7 +593,7 @@
   </section>
 </main>
 
-<footer>CHANG KANG KUNG · CKK05 — XUẤT NHẬP TỒN</footer>
+<footer>CHANG KANG KUNG · CKK — XUẤT NHẬP TỒN</footer>
 
 <script>
 (function(){
@@ -1377,7 +1377,7 @@ document.getElementById("btnExport").addEventListener("click",function(){
   var a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   var d=new Date();
-  a.download="CKK05-sao-luu-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
+  a.download="CKK-sao-luu-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
   a.click();URL.revokeObjectURL(a.href);
 });
 var importFile=document.getElementById("importFile");

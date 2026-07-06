@@ -1,4 +1,4 @@
-<title>Chang Kang Kung CKK05 — Xuất Nhập Tồn</title>
+<title>Chang Kang Kung CKK — Xuất Nhập Tồn</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   /* ============ DESIGN.md (apple) — token hoá ============ */
@@ -526,7 +526,7 @@
     <span class="lb">Tổng thành tiền</span>
     <span class="amt" id="heroTotalAmt">0</span>
   </div>
-  <h1 class="brand">Chang Kang Kung <em>CKK05</em><small>XUẤT · NHẬP · TỒN</small></h1>
+  <h1 class="brand">Chang Kang Kung <em>CKK</em><small>XUẤT · NHẬP · TỒN</small></h1>
 </header>
 
 <svg width="0" height="0" style="position:absolute">
@@ -566,7 +566,7 @@
   </section>
 </main>
 
-<footer>CHANG KANG KUNG · CKK05 — XUẤT NHẬP TỒN</footer>
+<footer>CHANG KANG KUNG · CKK — XUẤT NHẬP TỒN</footer>
 
 <script>
 (function(){
@@ -1349,7 +1349,7 @@ document.getElementById("btnExport").addEventListener("click",function(){
   var a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   var d=new Date();
-  a.download="CKK05-sao-luu-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
+  a.download="CKK-sao-luu-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
   a.click();URL.revokeObjectURL(a.href);
 });
 var importFile=document.getElementById("importFile");
