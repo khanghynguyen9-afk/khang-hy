@@ -50,6 +50,8 @@
   .btn-blue{border:none;background:var(--blue);color:#fff;padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
   .btn-ghost{border:1px solid var(--hairline);background:#fff;color:var(--ink);padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;cursor:pointer}
   .btn-ok{border:none;background:var(--pos);color:#fff;padding:9px 18px;border-radius:9999px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-del{border:1px solid rgba(227,0,0,.4);background:#fff;color:var(--neg);padding:9px 16px;border-radius:9999px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-del:hover{background:rgba(227,0,0,.08)}
   .empty{color:var(--ink-48);font-size:13px;padding:14px 4px}
   .note{font-size:12px;color:var(--ink-48);line-height:1.6;margin:10px 0 0}
 
@@ -93,7 +95,7 @@
   <section class="panel">
     <h2>Bảng của từng nhân viên</h2>
     <div id="memberList"><div class="empty">Đang tải…</div></div>
-    <p class="note">Bấm <b>Mở bảng</b> để xem và nhập trực tiếp vào bảng của nhân viên đó. Vai trò: <b>member</b> = nhân viên, <b>admin</b> = toàn quyền như bạn, <b>pending</b> = tạm khoá.</p>
+    <p class="note">Bấm <b>Mở bảng</b> để xem và nhập trực tiếp vào bảng của nhân viên đó. <b>✏️ Đổi tên</b> để đặt tên dễ kiểm soát (VD: CKK23). <b>🗑 Xoá</b> sẽ xoá vĩnh viễn số liệu — có xác nhận 2 lớp. Vai trò: <b>member</b> = nhân viên, <b>admin</b> = toàn quyền như bạn, <b>pending</b> = tạm khoá.</p>
   </section>
 </main>
 
@@ -167,7 +169,9 @@ async function loadAll(){
     ok.addEventListener("click",async function(){
       await fsM.updateDoc(fsM.doc(db,"users",u.uid),{role:"member"});loadAll();
     });
-    r.appendChild(ok);pend.appendChild(r);
+    var rej=document.createElement("button");rej.type="button";rej.className="btn-del";rej.textContent="✕ Từ chối";
+    rej.addEventListener("click",function(){deleteUser(u.uid,u.data.name,u.data.email);});
+    r.appendChild(ok);r.appendChild(rej);pend.appendChild(r);
   });
   /* --- thành viên + tóm tắt bảng --- */
   var members=users.filter(function(u){return u.data.role!=="pending";});
@@ -190,8 +194,21 @@ async function loadAll(){
        +'<div class="stat"><span>Âm</span><b class="neg">'+(s.am||0)+'</b></div>'
        +'<div class="stat"><span>Khớp</span><b>'+(s.khop||0)+'</b></div>'
       :'<div class="stat"><span>Số liệu</span><b>—</b></div>';
-    r.innerHTML='<div class="who"><b>'+esc(u.data.name)+(u.data.role==="admin"?" 👑":"")+'</b>'
+    var brand=(s&&s.brandNum)?' <span style="color:var(--red-logo)">· CKK'+esc(s.brandNum)+'</span>':'';
+    r.innerHTML='<div class="who"><b>'+esc(u.data.name)+brand+(u.data.role==="admin"?" 👑":"")+'</b>'
       +'<small>'+esc(u.data.email)+(upd?(" · cập nhật "+upd):"")+'</small></div>'+stats;
+    /* đổi tên hiển thị */
+    (function(u){
+      var ed=document.createElement("button");ed.type="button";ed.className="btn-ghost";ed.textContent="✏️ Đổi tên";
+      ed.addEventListener("click",async function(){
+        var nn=prompt('Tên hiển thị mới cho "'+u.data.name+'" (VD: CKK23):',u.data.name);
+        if(nn===null)return;
+        nn=nn.trim();
+        if(!nn){alert("Tên không được để trống.");return;}
+        await fsM.updateDoc(fsM.doc(db,"users",u.uid),{name:nn});loadAll();
+      });
+      r.appendChild(ed);
+    })(u);
     var sel=document.createElement("select");
     ["member","admin","pending"].forEach(function(role){
       var o=document.createElement("option");o.value=role;o.textContent=role;
@@ -206,8 +223,35 @@ async function loadAll(){
     var a=document.createElement("a");a.className="btn-blue";
     a.href="app.html?uid="+encodeURIComponent(u.uid);a.textContent="Mở bảng →";
     r.appendChild(a);
+    /* xoá file con */
+    (function(u){
+      var del=document.createElement("button");del.type="button";del.className="btn-del";del.textContent="🗑 Xoá";
+      del.addEventListener("click",function(){
+        if(u.uid===auth.currentUser.uid){alert("Không thể tự xoá tài khoản Admin đang đăng nhập.");return;}
+        deleteUser(u.uid,u.data.name,u.data.email);
+      });
+      r.appendChild(del);
+    })(u);
     memb.appendChild(r);
   }
+}
+
+/* Xoá file con: xác nhận 2 lớp để tránh bấm nhầm */
+async function deleteUser(uid,name,email){
+  var ok=confirm('XOÁ FILE CON "'+name+'" ('+email+')?\n\n'
+    +'• Toàn bộ số liệu XNT của người này sẽ bị xoá vĩnh viễn\n'
+    +'• Tài khoản mất quyền truy cập (nếu đăng ký lại sẽ ở trạng thái chờ duyệt)\n\n'
+    +'KHÔNG THỂ HOÀN TÁC.');
+  if(!ok)return;
+  var kw=prompt('Xác nhận lần cuối: gõ chữ  XOA  (không dấu) rồi bấm OK:');
+  if(kw===null)return;
+  if(kw.trim().toUpperCase()!=="XOA"){alert("Chưa gõ đúng chữ XOA — đã huỷ, không xoá gì.");return;}
+  try{
+    await fsM.deleteDoc(fsM.doc(db,"sheets",uid));
+    await fsM.deleteDoc(fsM.doc(db,"users",uid));
+    alert('Đã xoá "'+name+'".');
+  }catch(e){alert("Lỗi khi xoá: "+(e.code||e.message));}
+  loadAll();
 }
 })();
 </script>

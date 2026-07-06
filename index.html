@@ -142,6 +142,12 @@
     margin:0;color:var(--ink);
   }
   .brand em{font-style:normal;color:var(--red-logo)}
+  .brand-edit{
+    border:1px solid var(--hairline);background:rgba(255,255,255,.6);color:var(--ink-48);
+    width:30px;height:30px;border-radius:50%;font-size:13px;cursor:pointer;
+    vertical-align:middle;margin-left:10px;
+  }
+  .brand-edit:hover{color:var(--blue);border-color:var(--blue-focus)}
   .brand small{
     display:block;font-family:var(--font-text);font-size:12px;font-weight:600;
     letter-spacing:.32em;color:var(--ink-48);margin-top:12px;
@@ -526,7 +532,7 @@
     <span class="lb">Tổng thành tiền</span>
     <span class="amt" id="heroTotalAmt">0</span>
   </div>
-  <h1 class="brand">Chang Kang Kung <em>CKK</em><small>XUẤT · NHẬP · TỒN</small></h1>
+  <h1 class="brand">Chang Kang Kung <em>CKK<span id="brandNum"></span></em><button type="button" class="brand-edit" id="brandEdit" title="Thêm số chi nhánh cạnh CKK (tối đa 2 chữ số)">✎</button><small>XUẤT · NHẬP · TỒN</small></h1>
 </header>
 
 <svg width="0" height="0" style="position:absolute">
@@ -759,6 +765,7 @@ function ensureState(){
   if(!state.removedVT)state.removedVT=[];
   if(!state.removedMon)state.removedMon=[];
   if(!state.seq)state.seq=1;
+  if(state.brandNum===undefined)state.brandNum="";
 }
 ensureState();
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}}
@@ -1031,7 +1038,7 @@ function applyVarFilter(){
   });
 }
 
-function render(){buildVat();buildMon();buildVar();refreshAll();}
+function render(){buildVat();buildMon();buildVar();refreshAll();if(typeof applyBrandNum==="function")applyBrandNum();}
 
 /* ---------- bảng nhập riêng biệt ---------- */
 var entryLayer=document.getElementById("entryLayer");
@@ -1396,6 +1403,22 @@ if(!reduced&&"IntersectionObserver" in window){
   },{threshold:ths});
   document.querySelectorAll(".fx").forEach(function(el){io.observe(el);});
 }
+
+/* Số chi nhánh cạnh chữ CKK (tối đa 2 chữ số) — lưu theo từng bảng */
+function applyBrandNum(){
+  var el=document.getElementById("brandNum");
+  if(el)el.textContent=state.brandNum||"";
+  document.title="Chang Kang Kung CKK"+(state.brandNum||"")+" — Xuất Nhập Tồn";
+}
+document.getElementById("brandEdit").addEventListener("click",function(){
+  var cur=state.brandNum||"";
+  var v=prompt("Nhập số chi nhánh gắn cạnh CKK (tối đa 2 chữ số, để trống để bỏ số):",cur);
+  if(v===null)return;
+  v=v.trim();
+  if(!/^\d{0,2}$/.test(v)){alert("Chỉ nhập tối đa 2 chữ số (VD: 05, 21, 12) hoặc để trống.");return;}
+  state.brandNum=v;save();applyBrandNum();
+});
+applyBrandNum();
 
 render();
 })();
