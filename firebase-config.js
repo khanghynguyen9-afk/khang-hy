@@ -1,17 +1,14 @@
 /* ============================================================
-   CẤU HÌNH FIREBASE — dán cấu hình dự án của bạn vào đây.
-   Lấy tại: Firebase Console → Project settings → General
-   → Your apps → SDK setup and configuration → Config.
-   Khi chưa dán (còn chữ PASTE), web tự chạy ở chế độ máy lẻ
-   (lưu localStorage như cũ), không báo lỗi.
-   Lưu ý: các khóa này KHÔNG phải bí mật — bảo mật thật nằm ở
+   CẤU HÌNH FIREBASE — dự án khanghyck05.
+   Các khóa này KHÔNG phải bí mật — bảo mật thật nằm ở
    Security Rules trên máy chủ Firebase (xem HUONG-DAN-FIREBASE.md).
    ============================================================ */
 window.FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_PROJECT.firebaseapp.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyB90nkP2ZJ7s-0Eog6GlgQpW2RarpgqWy0",
+  authDomain: "khanghyck05.firebaseapp.com",
+  projectId: "khanghyck05",
+  storageBucket: "khanghyck05.firebasestorage.app",
+  messagingSenderId: "303365776154",
+  appId: "1:303365776154:web:d50b6a64bb0034dee1c2a3",
+  measurementId: "G-DY26V4SCFP"
 };
