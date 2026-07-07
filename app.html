@@ -516,7 +516,8 @@
   <button class="menu-item" id="btnDL"><span class="ic">⚖</span> Định lượng chuẩn (xem &amp; sửa)</button>
   <button class="menu-item" id="btnDel"><span class="ic">🗑</span> Xoá vật tư (hàng ngưng bán)</button>
   <h4>Dữ liệu</h4>
-  <button class="menu-item" id="btnExport"><span class="ic">⭳</span> Sao lưu số liệu (tải file)</button>
+  <button class="menu-item" id="btnExport"><span class="ic">📊</span> Sao lưu số liệu (tải file Excel)</button>
+  <button class="menu-item" id="btnJson"><span class="ic">⭳</span> Sao lưu dự phòng (.json)</button>
   <button class="menu-item" id="btnImport"><span class="ic">⭱</span> Khôi phục từ file sao lưu</button>
   <button class="menu-item" id="btnReset"><span class="ic">↺</span> Xoá số liệu, bắt đầu kỳ mới</button>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1379,14 +1380,116 @@ function renderDLList(){
 }
 
 /* ---------- sao lưu / khôi phục / kỳ mới ---------- */
-document.getElementById("btnExport").addEventListener("click",function(){
+function exportJson(){
   var blob=new Blob([JSON.stringify(state,null,1)],{type:"application/json"});
   var a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   var d=new Date();
   a.download="CKK-sao-luu-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".json";
   a.click();URL.revokeObjectURL(a.href);
-});
+}
+document.getElementById("btnJson").addEventListener("click",exportJson);
+document.getElementById("btnExport").addEventListener("click",exportExcel);
+
+/* ---------- EXPORT-EXCEL-BEGIN: xuất .xlsx đúng cấu trúc file gốc ---------- */
+function colL(n){var s="";while(n>0){var m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-1-m)/26;}return s;}
+function cellS(ws,a,v){ws[a]={t:"s",v:String(v)};}
+function cellN(ws,a,v){ws[a]={t:"n",v:v};}
+function cellF(ws,a,f){ws[a]={t:"n",f:f};}
+function cellFS(ws,a,f){ws[a]={t:"s",f:f};}
+function putNum(ws,a,raw){if(String(raw==null?"":raw).trim()!=="")cellN(ws,a,num(raw));}
+function buildWorkbookSheets(){
+  var vt=allVatTu(),mons=allMonBan(),bom=allBom();
+  /* ----- sheet 2: SL ban theo ngay ----- */
+  var ws2={};
+  cellS(ws2,"A1","BANG NHAP SO LUONG MON BAN THEO NGAY - CKK"+(state.brandNum||""));
+  cellS(ws2,"A3","Ghi chú: nhập số lượng bán từng ngày. Cột Tổng cộng tự cộng dồn 31 ngày và liên kết sang sheet chênh lệch.");
+  var hd2=["Mã món bán","Tên món bán"];
+  for(var d=1;d<=31;d++)hd2.push("Ngày "+d);
+  hd2.push("Tổng cộng");
+  for(var c=0;c<hd2.length;c++)cellS(ws2,colL(c+1)+"5",hd2[c]);
+  var row=6,catSeen=null;
+  mons.forEach(function(m){
+    if(m.cat!==catSeen){catSeen=m.cat;cellS(ws2,"A"+row,m.cat);row++;}
+    cellS(ws2,"A"+row,m.ma);cellS(ws2,"B"+row,m.ten);
+    var it=itemM(m.ma);
+    for(var d2=0;d2<31;d2++)putNum(ws2,colL(3+d2)+row,it.days[d2]);
+    cellF(ws2,"AH"+row,"SUM(C"+row+":AG"+row+")");
+    row++;
+  });
+  var last2=row-1;
+  ws2["!ref"]="A1:AH"+last2;
+  ws2["!cols"]=[{wch:12},{wch:36}];
+  /* ----- sheet 1: bảng chênh lệch ----- */
+  var ws1={};
+  cellS(ws1,"A1","BANG TINH CHENH LECH SU DUNG NGUYEN LIEU - CKK"+(state.brandNum||""));
+  cellS(ws1,"A3","Ghi chú: cột D,E,F,G,I,J,L,N nhập tay. Cột H,K,M,O là công thức tự động.");
+  var hd1=["Mã vật tư","Tên vật tư","ĐVT vật tư","Tồn đầu kỳ","Nhập mua","Nhập điều chuyển","Xuất điều chuyển","Xuất định mức","Xuất hủy","Xuất test","Tồn cuối kỳ","Kiểm kê","Chênh lệch","ĐƠN GIÁ","THÀNH TIỀN"];
+  for(var c1=0;c1<hd1.length;c1++)cellS(ws1,colL(c1+1)+"5",hd1[c1]);
+  var nv=vt.length,tr=6+nv;
+  var bh=tr+3,bs=bh+1,be=bs+bom.length-1;
+  vt.forEach(function(v,i){
+    var r=6+i,it=itemV(v.ma);
+    cellS(ws1,"A"+r,v.ma);cellS(ws1,"B"+r,v.ten);cellS(ws1,"C"+r,v.dvt);
+    putNum(ws1,"D"+r,it.tonDau);putNum(ws1,"E"+r,it.nhapMua);putNum(ws1,"F"+r,it.nhapDC);
+    putNum(ws1,"G"+r,it.xuatDC);
+    var hf="SUMIF($A$"+bs+":$A$"+be+",A"+r+",$H$"+bs+":$H$"+be+")";
+    (CATALOG.bomAlias[v.ma]||[]).forEach(function(src){
+      hf+='+SUMIF($A$'+bs+':$A$'+be+',"'+src+'",$H$'+bs+':$H$'+be+')';
+    });
+    cellF(ws1,"H"+r,hf);
+    putNum(ws1,"I"+r,it.xuatHuy);putNum(ws1,"J"+r,it.xuatTest);
+    cellF(ws1,"K"+r,"D"+r+"+E"+r+"+F"+r+"-G"+r+"-H"+r+"-I"+r+"-J"+r);
+    putNum(ws1,"L"+r,it.kiemKe);
+    cellF(ws1,"M"+r,"L"+r+"-K"+r);
+    cellN(ws1,"N"+r,gia(v.ma));
+    cellF(ws1,"O"+r,"N"+r+"*M"+r);
+  });
+  cellS(ws1,"N"+tr,"TỔNG:");
+  cellF(ws1,"O"+tr,"SUM(O6:O"+(tr-1)+")");
+  cellS(ws1,"Q2","Số mặt hàng dương:");cellF(ws1,"S2",'COUNTIF($M$6:$M$'+(tr-1)+',">0")');
+  cellS(ws1,"Q3","Số mặt hàng âm:");cellF(ws1,"S3",'COUNTIF($M$6:$M$'+(tr-1)+',"<0")');
+  cellS(ws1,"Q4","Kết luận:");cellFS(ws1,"S4",'IF(S2>=S3,"TANG TRUONG","THAT THOAT")');
+  ["Mã vật tư","Tên vật tư","ĐVT vật tư","Mã món bán","Tên món bán","Định lượng chuẩn","SL bán","Tổng định lượng chuẩn"]
+    .forEach(function(h,i){cellS(ws1,colL(i+1)+bh,h);});
+  var vtInfo={};vt.forEach(function(v){vtInfo[v.ma]=v;});
+  bom.forEach(function(b,i){
+    var r=bs+i,vi=vtInfo[b[0]];
+    cellS(ws1,"A"+r,b[0]);cellS(ws1,"B"+r,vi?vi.ten:b[0]);cellS(ws1,"C"+r,vi?vi.dvt:"");
+    cellS(ws1,"D"+r,b[1]);cellS(ws1,"E"+r,monName(b[1]));
+    cellN(ws1,"F"+r,dlVal(b[0],b[1],b[2]));
+    cellF(ws1,"G"+r,"IFERROR(VLOOKUP(D"+r+",'SL ban theo ngay'!$A$6:$AH$"+last2+",34,FALSE()),0)");
+    cellF(ws1,"H"+r,"F"+r+"*G"+r);
+  });
+  ws1["!ref"]="A1:S"+be;
+  ws1["!cols"]=[{wch:11},{wch:38},{wch:10},{wch:11},{wch:10},{wch:15},{wch:15},{wch:13},{wch:9},{wch:9},{wch:11},{wch:9},{wch:11},{wch:9},{wch:12}];
+  return {ws1:ws1,ws2:ws2};
+}
+/* EXPORT-EXCEL-END */
+function ensureXLSX(cb,fail){
+  if(window.XLSX)return cb();
+  var sc=document.createElement("script");
+  sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  sc.onload=function(){cb();};
+  sc.onerror=function(){fail();};
+  document.head.appendChild(sc);
+}
+function exportExcel(){
+  ensureXLSX(function(){
+    try{
+      var sh=buildWorkbookSheets();
+      var wb=XLSX.utils.book_new();
+      var s1name="CKK"+(state.brandNum||"");
+      XLSX.utils.book_append_sheet(wb,sh.ws1,s1name);
+      XLSX.utils.book_append_sheet(wb,sh.ws2,"SL ban theo ngay");
+      var d=new Date();
+      XLSX.writeFile(wb,s1name+"-XNT-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+".xlsx");
+    }catch(e){alert("Lỗi xuất Excel: "+e.message);}
+  },function(){
+    alert("Không tải được thư viện Excel (cần có mạng lần đầu). Sẽ tải bản .json thay thế.");
+    exportJson();
+  });
+}
 var importFile=document.getElementById("importFile");
 document.getElementById("btnImport").addEventListener("click",function(){importFile.click();});
 importFile.addEventListener("change",function(){
