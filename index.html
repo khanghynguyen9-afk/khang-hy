@@ -767,6 +767,7 @@ function ensureState(){
   if(!state.removedMon)state.removedMon=[];
   if(!state.seq)state.seq=1;
   if(state.brandNum===undefined)state.brandNum="";
+  if(!state.removedBom)state.removedBom=[];
 }
 ensureState();
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state));}catch(e){}}
@@ -782,7 +783,8 @@ function allMonBan(){
 }
 function allBom(){
   return CATALOG.bom.filter(function(b){
-    return state.removedVT.indexOf(b[0])<0&&state.removedMon.indexOf(b[1])<0;
+    return state.removedVT.indexOf(b[0])<0&&state.removedMon.indexOf(b[1])<0
+      &&state.removedBom.indexOf(b[0]+"|"+b[1])<0;
   }).concat(state.custom.bom);
 }
 
@@ -937,6 +939,9 @@ function buildAddRow(){
     +'<div class="vt-f" data-af-wrap="newcat" style="display:none"><label>Tên nhóm mới</label><input type="text" data-af="newcat" placeholder="VD: MÓN MỚI"></div>'
     +'<div class="vt-f"><label>Định lượng chuẩn (1 suất)</label><input type="number" step="any" data-af="dl" placeholder="1"></div>'
     +'</div>'
+    +'<div style="font-size:12px;font-weight:600;color:var(--ink-48)">Món này còn dùng trong combo/món bán có sẵn? Thêm liên kết định mức (mỗi liên kết một định lượng riêng):</div>'
+    +'<div data-af-extra style="display:flex;flex-direction:column;gap:8px"></div>'
+    +'<div><button type="button" class="btn-ghost" data-af="addlink" style="font-size:12px;padding:8px 14px">＋ Liên kết vào món/combo có sẵn</button></div>'
     +'<div class="af-actions"><button type="button" class="btn-ghost" data-af="cancel">Huỷ</button>'
     +'<button type="button" class="btn-blue" data-af="ok">Thêm (Enter)</button></div>';
   plus.addEventListener("click",function(){
@@ -945,6 +950,19 @@ function buildAddRow(){
   });
   form.querySelector('[data-af="cat"]').addEventListener("change",function(){
     form.querySelector('[data-af-wrap="newcat"]').style.display=this.value==="__new"?"":"none";
+  });
+  form.querySelector('[data-af="addlink"]').addEventListener("click",function(){
+    var box=form.querySelector("[data-af-extra]");
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;gap:8px;align-items:center";
+    var sel=monSelect();sel.style.flex="1";sel.style.minWidth="0";
+    var inp=document.createElement("input");
+    inp.type="number";inp.step="any";inp.placeholder="Định lượng";
+    inp.style.cssText="width:110px;padding:8px;border-radius:8px;border:1px solid var(--hairline);font:inherit;font-size:14px";
+    var x=document.createElement("button");x.type="button";x.className="del-btn";x.textContent="✕";
+    x.addEventListener("click",function(){row.remove();});
+    row.appendChild(sel);row.appendChild(inp);row.appendChild(x);
+    box.appendChild(row);
   });
   function doAdd(){
     var get=function(k){var el=form.querySelector('[data-af="'+k+'"]');return el?String(el.value).trim():"";};
@@ -957,6 +975,13 @@ function buildAddRow(){
     state.custom.vatTu.push({ma:maVT,ten:ten,dvt:get("dvt")||"Kg",gia:parseFloat(get("gia"))||0});
     state.custom.monBan.push({ma:maMon,ten:get("tenMon")||ten,cat:cat});
     state.custom.bom.push([maVT,maMon,parseFloat(get("dl"))||1]);
+    /* các liên kết combo/món có sẵn */
+    form.querySelectorAll("[data-af-extra] > div").forEach(function(row){
+      var sel=row.querySelector("select"),inp2=row.querySelector("input");
+      var dl2=parseFloat(inp2.value);
+      if(sel&&sel.value&&dl2>0&&!bomExists(maVT,sel.value))
+        state.custom.bom.push([maVT,sel.value,dl2]);
+    });
     save();render();
     var row=vtGrid.querySelector('.vt-row[data-key="v:'+maVT+'"]');
     if(row){
@@ -1330,11 +1355,33 @@ function renderPriceList(){
     list.appendChild(row);
   });
 }
-/* Định lượng chuẩn: nhóm theo vật tư, mỗi món 1 dòng sửa được */
+/* ---------- liên kết định mức: 1 vật tư dùng trong nhiều món/combo ---------- */
+function monSelect(){
+  var sel=document.createElement("select");
+  var groups={};
+  allMonBan().forEach(function(m){
+    if(!groups[m.cat]){groups[m.cat]=document.createElement("optgroup");groups[m.cat].label=m.cat;sel.appendChild(groups[m.cat]);}
+    var o=document.createElement("option");o.value=m.ma;o.textContent=m.ten;groups[m.cat].appendChild(o);
+  });
+  return sel;
+}
+function bomExists(maVT,maMon){
+  return allBom().some(function(b){return b[0]===maVT&&b[1]===maMon;});
+}
+function removeBomLink(maVT,maMon){
+  var idx=-1;
+  state.custom.bom.forEach(function(b,i){if(b[0]===maVT&&b[1]===maMon)idx=i;});
+  if(idx>=0)state.custom.bom.splice(idx,1);
+  else state.removedBom.push(maVT+"|"+maMon);
+  delete state.dl[dlKey(maVT,maMon)];
+  save();refreshAll();
+}
+/* Định lượng chuẩn: nhóm theo vật tư — sửa số, gỡ liên kết, thêm liên kết mới */
 function renderDLList(){
   var list=document.getElementById("dlList");list.innerHTML="";
   var seen={},order=[];
   allBom().forEach(function(b){if(!seen[b[0]]){seen[b[0]]=[];order.push(b[0]);}seen[b[0]].push(b);});
+  allVatTu().forEach(function(v){if(!seen[v.ma]){seen[v.ma]=[];order.push(v.ma);}});
   var vtName={};allVatTu().forEach(function(v){vtName[v.ma]=v.ten;});
   order.forEach(function(maVT){
     var g=document.createElement("div");g.className="price-group";
@@ -1346,8 +1393,40 @@ function renderDLList(){
       var inp=document.createElement("input");inp.type="number";inp.step="any";
       inp.value=dlRaw(b[0],b[1],b[2]);
       inp.addEventListener("input",function(){state.dl[dlKey(b[0],b[1])]=inp.value;save();refreshAll();});
-      row.appendChild(inp);list.appendChild(row);
+      row.appendChild(inp);
+      var x=document.createElement("button");x.type="button";x.className="del-btn";x.textContent="✕";
+      x.title="Gỡ liên kết định mức này";
+      x.addEventListener("click",function(){
+        if(!confirm('Gỡ liên kết "'+monName(b[1])+'" khỏi vật tư "'+(vtName[maVT]||maVT)+'"?\nMón bán vẫn còn, chỉ không trừ định mức vào vật tư này nữa.'))return;
+        removeBomLink(b[0],b[1]);renderDLList();
+      });
+      row.appendChild(x);
+      list.appendChild(row);
     });
+    (function(maVT){
+      var addRow=document.createElement("div");addRow.className="price-row";
+      var btn=document.createElement("button");btn.type="button";btn.className="btn-ghost";
+      btn.style.cssText="font-size:12px;padding:7px 14px";
+      btn.textContent="＋ Thêm liên kết món/combo";
+      btn.addEventListener("click",function(){
+        var f=document.createElement("div");f.className="price-row";
+        var sel=monSelect();sel.style.cssText="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--hairline);font:inherit;font-size:13px";
+        var inp=document.createElement("input");inp.type="number";inp.step="any";inp.placeholder="Đ.lượng";
+        var ok=document.createElement("button");ok.type="button";ok.className="btn-ok2";
+        ok.style.cssText="border:none;background:var(--blue);color:#fff;padding:8px 14px;border-radius:9999px;font:inherit;font-size:12px;font-weight:700;cursor:pointer";
+        ok.textContent="Lưu";
+        ok.addEventListener("click",function(){
+          var dl2=parseFloat(inp.value);
+          if(!sel.value||!(dl2>0)){alert("Chọn món và nhập định lượng lớn hơn 0.");return;}
+          if(bomExists(maVT,sel.value)){alert("Liên kết này đã có sẵn — sửa số ngay trên dòng của nó.");return;}
+          state.custom.bom.push([maVT,sel.value,dl2]);
+          save();refreshAll();renderDLList();
+        });
+        f.appendChild(sel);f.appendChild(inp);f.appendChild(ok);
+        addRow.parentNode.insertBefore(f,addRow);
+      });
+      addRow.appendChild(btn);list.appendChild(addRow);
+    })(maVT);
   });
 }
 
